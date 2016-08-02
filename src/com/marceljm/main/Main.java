@@ -18,9 +18,9 @@ public class Main {
 	public static Map<String, Map<String, Float>> completeMap = new HashMap<String, Map<String, Float>>();
 
 	public static String[] badWords = { " - ", " de ", " para ", " com ", " e ", " p\\/ ", " em ", " \\| ", " a ",
-			" \\+ ", " ç ", " do", " \\/ ", " sem ", " da ", " até ", " c\\/ ", " p ", " \\& ", " o ", " na ", " no ",
-			" as ", " os ", " ou ", " c ", " que ", " s ", " 1 ", " 2", " 3 ", " 4 ", " 5 ", " 6 ", " 7 ", " 8 ", " 9 ",
-			" 10 ", " in ", " ref\\. ", " das ", " dos ", " nas ", " nos ", " ref ", " on ", " and ", " mod\\. ",
+			" \\+ ", " ç ", " do ", " \\/ ", " sem ", " da ", " até ", " c\\/ ", " p ", " \\& ", " o ", " na ", " no ",
+			" as ", " os ", " ou ", " c ", " que ", " s ", " 1 ", " 2 ", " 3 ", " 4 ", " 5 ", " 6 ", " 7 ", " 8 ",
+			" 9 ", " 10 ", " in ", " ref\\. ", " das ", " dos ", " nas ", " nos ", " ref ", " on ", " and ", " mod\\. ",
 			" um ", " uma ", " n ", " for ", " ao ", " , " };
 
 	public static String[] badChars = { "- ", " -", "\\. ", " \\.", ", ", " ," };
@@ -42,6 +42,10 @@ public class Main {
 		while (name.contains("  "))
 			name = name.replace("  ", " ");
 		return name;
+	}
+
+	public static String addPluralWords(String name) {
+		return name.replaceAll("multifuncional", "multifuncionais");
 	}
 
 	public static void main(String[] args) throws IOException {
@@ -67,6 +71,7 @@ public class Main {
 			name = removeBadChars(name);
 			name = removeBadWords(name);
 			name = removeDoubleSpace(name);
+			name = addPluralWords(name);
 
 			float value;
 			String[] wordList = name.split(" ");
@@ -147,26 +152,26 @@ public class Main {
 			category(name);
 		}
 
-//		category("Memória CLP-MEM301/SEE SAMSUNG");
-//		category("Monitor Profissional LFD 46 Widescreen HDMI 460UTN SAMSUNG");
-//		category("Placa de Fax SCX-FAX101 para SCX-6345ND SAMSUNG");
-//		category("Tracionador Bandeja Manual JC96-02682A SAMSUNG");
-//		category("HD 40GB Para Série ML-4550/ML-HDK210/S SAMSUNG");
-//		category("Bolsa para Câmera Digital Pouch SQ NOC-222BK SUMDEX");
-//		category("Capa para Notebook 7-9 G618 Cinza GOLLA");
-//		category("Suporte de Teto para TV de 15 até 32 N05V2B ELG");
-//		category("Memória para Impressora 128 MB DDR1 CLP-MEM101/SEE SAMSUNG");
-//		category("Mouse e Teclado Microsoft 2LF-00023 Wireless");
-//		category("Teclado Microsoft Multimídia Curve Keyboard Comfort CV3000 - Preto");
-//		category("Teclado Microsoft All in One Media Wireless - Preto");
-//		category("Mouse Óptico Microsoft Mobile 1850 Wireless USB 2.0 - Rosa");
-//		category("Cabo HDMI 2 Metros - Xbox 360");
-//		category("Jogo Castlevania: Lords Of Shadows Collection - Xbox 360");
-//		category("Jogo BioShock - Xbox 360");
-//		category("Jogo The Wolf Among Us - Xbox 360");
-//		category("Jogo The Evil Within - Xbox 360");
-//		category("Jogo: Devil May Cry 4 - Xbox 360");
-//		category("tablet 4gb android 4.2 wi-fi orion small branco spacebr");
+		category("Memória CLP-MEM301/SEE SAMSUNG");
+		category("Monitor Profissional LFD 46 Widescreen HDMI 460UTN SAMSUNG");
+		category("Placa de Fax SCX-FAX101 para SCX-6345ND SAMSUNG");
+		category("Tracionador Bandeja Manual JC96-02682A SAMSUNG");
+		category("HD 40GB Para Série ML-4550/ML-HDK210/S SAMSUNG");
+		category("Bolsa para Câmera Digital Pouch SQ NOC-222BK SUMDEX");
+		category("Capa para Notebook 7-9 G618 Cinza GOLLA");
+		category("Suporte de Teto para TV de 15 até 32 N05V2B ELG");
+		category("Memória para Impressora 128 MB DDR1 CLP-MEM101/SEE SAMSUNG");
+		category("Mouse e Teclado Microsoft 2LF-00023 Wireless");
+		category("Teclado Microsoft Multimídia Curve Keyboard Comfort CV3000 - Preto");
+		category("Teclado Microsoft All in One Media Wireless - Preto");
+		category("Mouse Óptico Microsoft Mobile 1850 Wireless USB 2.0 - Rosa");
+		category("Cabo HDMI 2 Metros - Xbox 360");
+		category("Jogo Castlevania: Lords Of Shadows Collection - Xbox 360");
+		category("Jogo BioShock - Xbox 360");
+		category("Jogo The Wolf Among Us - Xbox 360");
+		category("Jogo The Evil Within - Xbox 360");
+		category("Jogo: Devil May Cry 4 - Xbox 360");
+		category("tablet 4gb android 4.2 wi-fi orion small branco spacebr");
 	}
 
 	public static void category(String name) {
@@ -174,6 +179,7 @@ public class Main {
 		name = removeBadChars(name);
 		name = removeBadWords(name);
 		name = removeDoubleSpace(name);
+		name = addPluralWords(name);
 
 		Map<String, Float> resultMap = new HashMap<String, Float>();
 
@@ -205,23 +211,24 @@ public class Main {
 		Category category3 = categoryList.get(size - 3);
 
 		String finalCategory = category1.getName();
-		if (category1.getValue() - category2.getValue() < 1) {
-			if (!category1.getName().toLowerCase().contains(wordList[0])) {
-				if (category2.getName().toLowerCase().contains(wordList[0])) {
-					finalCategory = category2.getName();
-				} else if (category3.getName().toLowerCase().contains(wordList[0])) {
-					finalCategory = category3.getName();
-				}
+		// if (category1.getValue() - category2.getValue() < 1) {
+		if (!category1.getName().toLowerCase().contains(wordList[0])) {
+			if (category2.getName().toLowerCase().contains(wordList[0])) {
+				finalCategory = category2.getName();
+			} else if (category3.getName().toLowerCase().contains(wordList[0])) {
+				finalCategory = category3.getName();
 			}
+			// }
 		}
 		System.out.println(name + " [" + finalCategory + "]");
 
-		/* RESULT
-		 * for (int i = categoryList.size() - 1; i > categoryList.size() - 4;
-		 * i--) { System.out.println( String.format("%.2f",
-		 * categoryList.get(i).getValue()) + ":\t" +
-		 * categoryList.get(i).getName()); }
-		 */
+		// for (int i = categoryList.size() - 1; i > categoryList.size() - 4;
+		// i--) {
+		// System.out.println(
+		// String.format("%.2f", categoryList.get(i).getValue()) + ":\t" +
+		// categoryList.get(i).getName());
+		// }
+
 	}
 
 }
