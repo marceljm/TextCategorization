@@ -6,7 +6,9 @@ public class ConstantService {
 
 	public static String CHARSET = "UTF8";
 
-	public static String INPUT_FILE = "resources/merge.csv";
+	public static String INPUT_FILE = "resources/input.csv";
+
+	public static String INPUT_TEST_FILE = "resources/uncategorized.csv";
 
 	public static String[] BAD_WORDS = { " - ", " de ", " para ", " com ", " e ", " p\\/ ", " em ", " \\| ", " a ",
 			" \\+ ", " ç ", " do ", " \\/ ", " sem ", " da ", " até ", " c\\/ ", " p ", " \\& ", " o ", " na ", " no ",
