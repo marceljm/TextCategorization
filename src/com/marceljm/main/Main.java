@@ -92,7 +92,7 @@ public class Main {
 		in.close();
 
 		/* test */
-		testWithList(fullMap);
+		//testWithList(fullMap);
 		//testWithFile(fullMap);
 	}
 
@@ -129,18 +129,22 @@ public class Main {
 
 		/* categorize */
 		int size = categoryList.size();
-		Category category1 = categoryList.get(size - 1);
-		Category category2 = categoryList.get(size - 2);
-		Category category3 = categoryList.get(size - 3);
-		String finalCategory = category1.getName();
+		if (size == 0) {
+			System.out.println("Cannot be categorized:" + name);
+			return;
+		}
+		Category[] category = new Category[size];
+		for (int i = 0; i < size; i++) {
+			category[i] = categoryList.get(size - i - 1);
+		}
+		String finalCategory = category[0].getName();
 
 		/* based on category text, the result can change */
-		if (!category1.getName().toLowerCase().contains(wordList[0])) {
-			if (category2.getName().toLowerCase().contains(wordList[0])) {
-				finalCategory = category2.getName();
-			} else if (category3.getName().toLowerCase().contains(wordList[0])) {
-				finalCategory = category3.getName();
-			}
+		if (!category[0].getName().toLowerCase().contains(wordList[0])) {
+			if (size > 1 && category[1].getName().toLowerCase().contains(wordList[0]))
+				finalCategory = category[1].getName();
+			else if (size > 2 && category[2].getName().toLowerCase().contains(wordList[0]))
+				finalCategory = category[2].getName();
 		}
 
 		/* print result */
@@ -150,7 +154,7 @@ public class Main {
 	}
 
 	private static void printTopRelatedCategories(List<Category> categoryList) {
-		for (int i = categoryList.size() - 1; i > categoryList.size() - 4; i--) {
+		for (int i = categoryList.size() - 1; i > categoryList.size() - 4 && i >= 0; i--) {
 			System.out.println(
 					String.format("%.2f", categoryList.get(i).getValue()) + ":\t" + categoryList.get(i).getName());
 		}
