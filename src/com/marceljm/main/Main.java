@@ -12,128 +12,72 @@ import java.util.List;
 import java.util.Map;
 
 import com.marceljm.entity.Category;
+import com.marceljm.service.ConstantService;
+import com.marceljm.util.CalculatorUtil;
+import com.marceljm.util.TextUtil;
+import com.marceljm.util.ValidateUtil;
 
 public class Main {
 
-	public static Map<String, Map<String, Float>> completeMap = new HashMap<String, Map<String, Float>>();
-
-	public static String[] badWords = { " - ", " de ", " para ", " com ", " e ", " p\\/ ", " em ", " \\| ", " a ",
-			" \\+ ", " ç ", " do ", " \\/ ", " sem ", " da ", " até ", " c\\/ ", " p ", " \\& ", " o ", " na ", " no ",
-			" as ", " os ", " ou ", " c ", " que ", " s ", " 1 ", " 2 ", " 3 ", " 4 ", " 5 ", " 6 ", " 7 ", " 8 ",
-			" 9 ", " 10 ", " in ", " ref\\. ", " das ", " dos ", " nas ", " nos ", " ref ", " on ", " and ", " mod\\. ",
-			" um ", " uma ", " n ", " for ", " ao ", " , " };
-
-	public static String[] badChars = { "- ", " -", "\\. ", " \\.", ", ", " ," };
-
-	public static String removeBadWords(String name) {
-		for (String i : badWords) {
-			name = name.replaceAll(i, " ");
-		}
-		return name;
-	}
-
-	public static String removeBadChars(String name) {
-		for (String i : badChars)
-			name = name.replaceAll(i, " ");
-		return name;
-	}
-
-	public static String removeDoubleSpace(String name) {
-		while (name.contains("  "))
-			name = name.replace("  ", " ");
-		return name;
-	}
-
-	public static String addPluralWords(String name) {
-		return name.replaceAll("multifuncional", "multifuncionais");
-	}
-
 	public static void main(String[] args) throws IOException {
-		File fileDir = new File("resources/product.csv");
-		BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(fileDir), "UTF8"));
+		/* name:category:weight */
+		Map<String, Map<String, Float>> fullMap = new HashMap<String, Map<String, Float>>();
 
 		String line;
 		String name;
 		String path;
 
-		long row = 0;
-		in.readLine();
-		// Built Map
+		long rowCounter = 0;
+
+		float weight;
+
+		File fileDir = new File(ConstantService.INPUT_FILE);
+		BufferedReader in = new BufferedReader(
+				new InputStreamReader(new FileInputStream(fileDir), ConstantService.CHARSET));
+
+		/* read lines */
 		while ((line = in.readLine()) != null) {
-			// System.out.println(line);
+			if (line.contains(ConstantService.HEADER_SIGNATURE))
+				continue;
 
 			name = line.split("\";\"")[1];
 			path = line.split("\";\"")[7];
-			if (!path.contains("/") || path.toLowerCase().contains("inativ") || path.contains("ativar"))
+
+			if (!ValidateUtil.isValidCategory(path.toLowerCase()))
 				continue;
 
-			name = name.toLowerCase();
-			name = removeBadChars(name);
-			name = removeBadWords(name);
-			name = removeDoubleSpace(name);
-			name = addPluralWords(name);
-
-			float value;
+			name = TextUtil.normalize(name);
 			String[] wordList = name.split(" ");
-			if (wordList.length < 3)
+			if (!ValidateUtil.isValidNameLength(wordList))
 				continue;
-			int count = 0;
+
+			/* fill map name:category:weight */
+			int wordCounter = 0;
 			for (String word : wordList) {
-				// define value
-				switch (count) {
-				case 0:
-					if (path.toLowerCase().contains(word))
-						value = 2F;
-					else
-						value = 1F;
-					break;
-				case 1:
-					if (path.toLowerCase().contains(word))
-						if (path.toLowerCase().contains(wordList[0])) {
-							value = 10F; // bolsa câmera 10
-						} else
-							value = 1.75F;
-					else
-						value = 1F;
-					break;
-				case 2:
-					if (path.toLowerCase().contains(word))
-						if (path.toLowerCase().contains(wordList[0]) && path.toLowerCase().contains(wordList[1]))
-							value = 20F;
-						else if (path.toLowerCase().contains(wordList[0]) || path.toLowerCase().contains(wordList[1]))
-							value = 10F;
-						else
-							value = 1.5F;
-					else
-						value = 1F;
-					break;
-				default:
-					if (path.toLowerCase().contains(word))
-						value = 1.25F;
-					else
-						value = 1F;
-				}
-				if (completeMap.containsKey(word)) {
-					if (completeMap.get(word).get(path) != null) {
-						completeMap.get(word).put(path, completeMap.get(word).get(path) + value);
-					} else {
-						completeMap.get(word).put(path, value);
-					}
-				} else {
+				weight = CalculatorUtil.weight(wordCounter, path.toLowerCase(), word, wordList);
+
+				if (!fullMap.containsKey(word)) {
 					Map<String, Float> aux = new HashMap<String, Float>();
-					aux.put(path, value);
-					completeMap.put(word, aux);
+					aux.put(path, weight);
+					fullMap.put(word, aux);
+				} else {
+					if (fullMap.get(word).get(path) == null)
+						fullMap.get(word).put(path, weight);
+					else
+						fullMap.get(word).put(path, fullMap.get(word).get(path) + weight);
 				}
-				count++;
+				wordCounter++;
 			}
-			row++;
-			if (row % 10000 == 0)
-				System.out.println(row);
+
+			if (rowCounter % 10000 == 0)
+				System.out.println(rowCounter);
+			rowCounter++;
 		}
 
-		// Convert Values to %
-		for (Map.Entry<String, Map<String, Float>> mainMap : completeMap.entrySet()) {
-			Float total = 0F;
+		/* convert to percentage */
+		Float total;
+		for (Map.Entry<String, Map<String, Float>> mainMap : fullMap.entrySet()) {
+			total = 0F;
 			for (Map.Entry<String, Float> subMap : mainMap.getValue().entrySet()) {
 				total += subMap.getValue();
 			}
@@ -144,42 +88,52 @@ public class Main {
 
 		in.close();
 
-		fileDir = new File("resources/megamamute.csv");
-		in = new BufferedReader(new InputStreamReader(new FileInputStream(fileDir), "UTF8"));
-		in.readLine();
-		while ((line = in.readLine()) != null) {
-			name = line.split("\";\"")[1];
-			category(name);
-		}
+		test(fullMap);
 
-		category("Memória CLP-MEM301/SEE SAMSUNG");
-		category("Monitor Profissional LFD 46 Widescreen HDMI 460UTN SAMSUNG");
-		category("Placa de Fax SCX-FAX101 para SCX-6345ND SAMSUNG");
-		category("Tracionador Bandeja Manual JC96-02682A SAMSUNG");
-		category("HD 40GB Para Série ML-4550/ML-HDK210/S SAMSUNG");
-		category("Bolsa para Câmera Digital Pouch SQ NOC-222BK SUMDEX");
-		category("Capa para Notebook 7-9 G618 Cinza GOLLA");
-		category("Suporte de Teto para TV de 15 até 32 N05V2B ELG");
-		category("Memória para Impressora 128 MB DDR1 CLP-MEM101/SEE SAMSUNG");
-		category("Mouse e Teclado Microsoft 2LF-00023 Wireless");
-		category("Teclado Microsoft Multimídia Curve Keyboard Comfort CV3000 - Preto");
-		category("Teclado Microsoft All in One Media Wireless - Preto");
-		category("Mouse Óptico Microsoft Mobile 1850 Wireless USB 2.0 - Rosa");
-		category("Cabo HDMI 2 Metros - Xbox 360");
-		category("Jogo Castlevania: Lords Of Shadows Collection - Xbox 360");
-		category("Jogo BioShock - Xbox 360");
-		category("Jogo The Wolf Among Us - Xbox 360");
-		category("Jogo The Evil Within - Xbox 360");
-		category("Jogo: Devil May Cry 4 - Xbox 360");
-		category("tablet 4gb android 4.2 wi-fi orion small branco spacebr");
+		// fillFile(fullMap);
 	}
 
-	public static void category(String name) {
-		name = name.toLowerCase();
-		name = removeBadChars(name);
-		name = removeBadWords(name);
-		name = removeDoubleSpace(name);
-		name = addPluralWords(name);
+	private static void test(Map<String, Map<String, Float>> fullMap) {
+		category(fullMap, "Memória CLP-MEM301/SEE SAMSUNG");
+		category(fullMap, "Monitor Profissional LFD 46 Widescreen HDMI 460UTN SAMSUNG");
+		category(fullMap, "Placa de Fax SCX-FAX101 para SCX-6345ND SAMSUNG");
+		category(fullMap, "Tracionador Bandeja Manual JC96-02682A SAMSUNG");
+		category(fullMap, "HD 40GB Para Série ML-4550/ML-HDK210/S SAMSUNG");
+		category(fullMap, "Bolsa para Câmera Digital Pouch SQ NOC-222BK SUMDEX");
+		category(fullMap, "Capa para Notebook 7-9 G618 Cinza GOLLA");
+		category(fullMap, "Suporte de Teto para TV de 15 até 32 N05V2B ELG");
+		category(fullMap, "Memória para Impressora 128 MB DDR1 CLP-MEM101/SEE SAMSUNG");
+		category(fullMap, "Mouse e Teclado Microsoft 2LF-00023 Wireless");
+		category(fullMap, "Teclado Microsoft Multimídia Curve Keyboard Comfort CV3000 - Preto");
+		category(fullMap, "Teclado Microsoft All in One Media Wireless - Preto");
+		category(fullMap, "Mouse Óptico Microsoft Mobile 1850 Wireless USB 2.0 - Rosa");
+		category(fullMap, "Cabo HDMI 2 Metros - Xbox 360");
+		category(fullMap, "Jogo Castlevania: Lords Of Shadows Collection - Xbox 360");
+		category(fullMap, "Jogo BioShock - Xbox 360");
+		category(fullMap, "Jogo The Wolf Among Us - Xbox 360");
+		category(fullMap, "Jogo The Evil Within - Xbox 360");
+		category(fullMap, "Jogo: Devil May Cry 4 - Xbox 360");
+		category(fullMap, "tablet 4gb android 4.2 wi-fi orion small branco spacebr");
+	}
+
+	private static void fillFile(Map<String, Map<String, Float>> fullMap) {
+		// File fileDir = new File(ConstantService.INPUT_FILE);
+		// BufferedReader in = new BufferedReader(
+		// new InputStreamReader(new FileInputStream(fileDir),
+		// ConstantService.CHARSET));
+
+		// fileDir = new File("resources/megamamute.csv");
+		// in = new BufferedReader(new InputStreamReader(new
+		// FileInputStream(fileDir), "UTF8"));
+		// in.readLine();
+		// while ((line = in.readLine()) != null) {
+		// name = line.split("\";\"")[1];
+		// category(fullMap, name);
+		// }
+	}
+
+	public static void category(Map<String, Map<String, Float>> completeMap, String name) {
+		name = TextUtil.normalize(name);
 
 		Map<String, Float> resultMap = new HashMap<String, Float>();
 
