@@ -37,7 +37,7 @@ public class Main {
 		BufferedReader in = new BufferedReader(
 				new InputStreamReader(new FileInputStream(fileDir), ConstantService.CHARSET));
 
-		/* read file */
+		/* read file to learn */
 		while ((line = in.readLine()) != null) {
 			if (line.contains(ConstantService.HEADER_SIGNATURE))
 				continue;
@@ -53,12 +53,12 @@ public class Main {
 			if (!ValidateUtil.isValidNameLength(wordList))
 				continue;
 
-			String pathNormalized = TextUtil.normalize(path);
+			String normalizedPath = TextUtil.normalize(path);
 
 			/* populate fullMap */
 			int wordCounter = 0;
 			for (String word : wordList) {
-				weight = CalculatorUtil.weight(wordCounter, pathNormalized, word, wordList);
+				weight = CalculatorUtil.weight(wordCounter, normalizedPath, word, wordList);
 
 				if (!fullMap.containsKey(word)) {
 					Map<String, Float> aux = new HashMap<String, Float>();
