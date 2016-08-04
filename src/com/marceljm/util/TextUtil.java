@@ -1,5 +1,7 @@
 package com.marceljm.util;
 
+import java.text.Normalizer;
+
 import com.marceljm.service.ConstantService;
 
 public class TextUtil {
@@ -29,6 +31,7 @@ public class TextUtil {
 	}
 
 	public static String normalize(String text) {
+		text = Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "");
 		text = text.toLowerCase();
 		text = removeBadChars(text);
 		text = removeBadWords(text);

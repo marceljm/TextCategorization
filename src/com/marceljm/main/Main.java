@@ -53,10 +53,12 @@ public class Main {
 			if (!ValidateUtil.isValidNameLength(wordList))
 				continue;
 
+			String pathNormalized = TextUtil.normalize(path);
+
 			/* populate fullMap */
 			int wordCounter = 0;
 			for (String word : wordList) {
-				weight = CalculatorUtil.weight(wordCounter, path.toLowerCase(), word, wordList);
+				weight = CalculatorUtil.weight(wordCounter, pathNormalized, word, wordList);
 
 				if (!fullMap.containsKey(word)) {
 					Map<String, Float> aux = new HashMap<String, Float>();
@@ -92,8 +94,8 @@ public class Main {
 		in.close();
 
 		/* test */
-		//testWithList(fullMap);
-		//testWithFile(fullMap);
+		testWithList(fullMap);
+		// testWithFile(fullMap);
 	}
 
 	public static void categorize(Map<String, Map<String, Float>> fullMap, String name) {
@@ -141,9 +143,11 @@ public class Main {
 
 		/* based on category text, the result can change */
 		if (!category[0].getName().toLowerCase().contains(wordList[0])) {
-			if (size > 1 && category[1].getName().toLowerCase().contains(wordList[0]))
+			if (size > 1 && category[0].getValue() - category[1].getValue() < 1.5F
+					&& category[1].getName().toLowerCase().contains(wordList[0]))
 				finalCategory = category[1].getName();
-			else if (size > 2 && category[2].getName().toLowerCase().contains(wordList[0]))
+			else if (size > 2 && category[0].getValue() - category[2].getValue() < 1.5F
+					&& category[2].getName().toLowerCase().contains(wordList[0]))
 				finalCategory = category[2].getName();
 		}
 
