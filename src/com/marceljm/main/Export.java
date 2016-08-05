@@ -24,15 +24,14 @@ public class Export {
 
 		String line;
 		StringBuilder stringBuilder = new StringBuilder();
-		String[] fields = new String[11];
+		String[] field = new String[11];
 
 		while ((line = in.readLine()) != null) {
+			field = line.split("\";\"");
+			
 			/* remove first and last char */
-			line = line.replaceFirst("\"", "");
-			line = line.replaceAll("\"$", "");
-
-			fields = line.split("\";\"");
-			System.out.println(fields[0]+":"+fields[11]);
+			field[0] = field[0].substring(1, field[0].length());
+			field[11] = field[11].substring(0, field[11].length() - 1);
 		}
 	}
 
