@@ -15,12 +15,12 @@ import java.util.Map;
 
 import com.marceljm.entity.Category;
 import com.marceljm.service.ConstantService;
-import com.marceljm.service.MachineLearningService;
+import com.marceljm.service.CategoryMachineLearningService;
 import com.marceljm.util.CalculatorUtil;
 import com.marceljm.util.TextUtil;
 import com.marceljm.util.ValidateUtil;
 
-public class MachineLearningServiceImpl implements MachineLearningService {
+public class CategoryMachineLearningServiceImpl implements CategoryMachineLearningService {
 
 	@Override
 	public Map<String, Map<String, Float>> categoryKnowledgeBase()

@@ -22,6 +22,7 @@ public class ConstantService {
 
 	public static String[] VALID_CATEGORY_MARK = { "/" };
 
-	public static String[] INVALID_CATEGORY_MARK = { "inativ", "ativar" };
+	public static String[] INVALID_CATEGORY_MARK = { "inativ", "ativar", " ativa", "integracao sige", "loja tim",
+			"reversa" };
 
 }
