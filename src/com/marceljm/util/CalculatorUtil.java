@@ -2,28 +2,32 @@ package com.marceljm.util;
 
 public class CalculatorUtil {
 
-	public static float weight(int wordCounter, String path, String word, String[] wordList) {
+	public static float categoryWeight(int wordCounter, String knownData, String word, String[] wordList) {
 		switch (wordCounter) {
 		case 0:
-			return path.contains(word) ? 1.5F : 1F;
+			return knownData.contains(word) ? 1.5F : 1F;
 		case 1:
-			if (path.contains(word))
-				return path.contains(wordList[0]) ? 10F : 1.5F;
+			if (knownData.contains(word))
+				return knownData.contains(wordList[0]) ? 10F : 1.5F;
 			break;
 		case 2:
-			if (path.contains(word)) {
-				if (path.contains(wordList[0]) && path.contains(wordList[1]))
+			if (knownData.contains(word)) {
+				if (knownData.contains(wordList[0]) && knownData.contains(wordList[1]))
 					return 20F;
-				else if (path.contains(wordList[0]) || path.contains(wordList[1]))
+				else if (knownData.contains(wordList[0]) || knownData.contains(wordList[1]))
 					return 10F;
 				else
 					return 1.5F;
 			}
 			break;
 		default:
-			return path.contains(word) ? 1.5F : 1F;
+			return knownData.contains(word) ? 1.5F : 1F;
 		}
 		return 1F;
+	}
+
+	public static float genericWeight(String knownData, String word) {
+		return knownData.contains(word) ? 1.5F : 1F;
 	}
 
 }

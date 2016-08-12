@@ -1,6 +1,6 @@
 package com.marceljm.entity;
 
-public class Category implements Comparable<Category> {
+public class Field implements Comparable<Field> {
 
 	private Float value;
 
@@ -23,7 +23,7 @@ public class Category implements Comparable<Category> {
 	}
 
 	@Override
-	public int compareTo(Category category) {
+	public int compareTo(Field category) {
 		return value.compareTo(category.getValue());
 	}
 

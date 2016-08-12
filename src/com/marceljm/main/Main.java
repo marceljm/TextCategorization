@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.marceljm.entity.Category;
+import com.marceljm.entity.Field;
 import com.marceljm.service.ConstantService;
 import com.marceljm.util.CalculatorUtil;
 import com.marceljm.util.TextUtil;
@@ -58,7 +58,7 @@ public class Main {
 			/* populate fullMap */
 			int wordCounter = 0;
 			for (String word : wordList) {
-				weight = CalculatorUtil.weight(wordCounter, normalizedPath, word, wordList);
+				weight = CalculatorUtil.categoryWeight(wordCounter, normalizedPath, word, wordList);
 
 				if (!fullMap.containsKey(word)) {
 					Map<String, Float> aux = new HashMap<String, Float>();
@@ -120,9 +120,9 @@ public class Main {
 		}
 
 		/* convert resultMap to sorted list */
-		List<Category> categoryList = new ArrayList<Category>();
+		List<Field> categoryList = new ArrayList<Field>();
 		for (Map.Entry<String, Float> i : resultMap.entrySet()) {
-			Category cat = new Category();
+			Field cat = new Field();
 			cat.setName(i.getKey());
 			cat.setValue(i.getValue());
 			categoryList.add(cat);
@@ -135,7 +135,7 @@ public class Main {
 			System.out.println("Cannot be categorized:" + name);
 			return;
 		}
-		Category[] category = new Category[size];
+		Field[] category = new Field[size];
 		for (int i = 0; i < size; i++) {
 			category[i] = categoryList.get(size - i - 1);
 		}
@@ -157,7 +157,7 @@ public class Main {
 		printTopRelatedCategories(categoryList);
 	}
 
-	private static void printTopRelatedCategories(List<Category> categoryList) {
+	private static void printTopRelatedCategories(List<Field> categoryList) {
 		for (int i = categoryList.size() - 1; i > categoryList.size() - 4 && i >= 0; i--) {
 			System.out.println(
 					String.format("%.2f", categoryList.get(i).getValue()) + ":\t" + categoryList.get(i).getName());

@@ -14,23 +14,33 @@ import java.util.List;
 import java.util.Map;
 
 import com.marceljm.entity.Field;
-import com.marceljm.service.CategoryMachineLearningService;
 import com.marceljm.service.ConstantService;
+import com.marceljm.service.GenericMachineLearningService;
 import com.marceljm.util.CalculatorUtil;
 import com.marceljm.util.TextUtil;
 import com.marceljm.util.ValidateUtil;
 
-public class CategoryMachineLearningServiceImpl implements CategoryMachineLearningService {
+public class GenericMachineLearningServiceImpl implements GenericMachineLearningService {
+
+	private int KEY_COLUMN1 = -1;
+	private int KEY_COLUMN2 = -1;
+	private int KNOWN_DATA_COLUMN;
+
+	public GenericMachineLearningServiceImpl(int keyColumn1, int keyColumn2, int knownDataColumn) {
+		KEY_COLUMN1 = keyColumn1;
+		KEY_COLUMN2 = keyColumn2;
+		KNOWN_DATA_COLUMN = knownDataColumn;
+	}
 
 	@Override
 	public Map<String, Map<String, Float>> knowledgeBase() throws UnsupportedEncodingException, FileNotFoundException {
 
-		/* name:[category:weight] */
+		/* name:[brand:weight] */
 		Map<String, Map<String, Float>> fullMap = new HashMap<String, Map<String, Float>>();
 
 		String line;
-		String name;
-		String path;
+		String key;
+		String knownData;
 
 		long rowCounter = 0;
 
@@ -46,35 +56,35 @@ public class CategoryMachineLearningServiceImpl implements CategoryMachineLearni
 				if (line.contains(ConstantService.HEADER_SIGNATURE))
 					continue;
 
-				name = line.split("\";\"")[1];
-				path = line.split("\";\"")[7];
+				key = line.split("\";\"")[KEY_COLUMN1];
+				if (KEY_COLUMN2 > 0)
+					key += " " + line.split("\";\"")[KEY_COLUMN2];
+				knownData = line.split("\";\"")[KNOWN_DATA_COLUMN];
 
-				if (!ValidateUtil.isValidCategory(path.toLowerCase()))
+				if (knownData.equals(""))
 					continue;
 
-				name = TextUtil.normalize(name);
-				String[] wordList = name.split(" ");
+				key = TextUtil.normalize(key);
+				String[] wordList = key.split(" ");
 				if (!ValidateUtil.isValidNameLength(wordList))
 					continue;
 
-				String normalizedPath = TextUtil.normalize(path);
+				String normalizedKnownData = TextUtil.normalize(knownData);
 
 				/* populate fullMap */
-				int wordCounter = 0;
 				for (String word : wordList) {
-					weight = CalculatorUtil.categoryWeight(wordCounter, normalizedPath, word, wordList);
+					weight = CalculatorUtil.genericWeight(normalizedKnownData, word);
 
 					if (!fullMap.containsKey(word)) {
 						Map<String, Float> aux = new HashMap<String, Float>();
-						aux.put(path, weight);
+						aux.put(knownData, weight);
 						fullMap.put(word, aux);
 					} else {
-						if (fullMap.get(word).get(path) == null)
-							fullMap.get(word).put(path, weight);
+						if (fullMap.get(word).get(knownData) == null)
+							fullMap.get(word).put(knownData, weight);
 						else
-							fullMap.get(word).put(path, fullMap.get(word).get(path) + weight);
+							fullMap.get(word).put(knownData, fullMap.get(word).get(knownData) + weight);
 					}
-					wordCounter++;
 				}
 
 				/* print progress */
@@ -108,14 +118,14 @@ public class CategoryMachineLearningServiceImpl implements CategoryMachineLearni
 	}
 
 	@Override
-	public String categorize(Map<String, Map<String, Float>> fullMap, String name) {
-		/* category:weight */
+	public String categorize(Map<String, Map<String, Float>> fullMap, String key) {
+		/* brand:weight */
 		Map<String, Float> resultMap = new HashMap<String, Float>();
 
-		name = TextUtil.normalize(name);
+		key = TextUtil.normalize(key);
 
 		/* populate resultMap */
-		String[] wordList = name.split(" ");
+		String[] wordList = key.split(" ");
 		for (String word : wordList) {
 			Map<String, Float> subMap = fullMap.get(word);
 			if (subMap != null) {
@@ -130,36 +140,36 @@ public class CategoryMachineLearningServiceImpl implements CategoryMachineLearni
 		}
 
 		/* convert resultMap to sorted list */
-		List<Field> categoryList = new ArrayList<Field>();
+		List<Field> sortedList = new ArrayList<Field>();
 		for (Map.Entry<String, Float> i : resultMap.entrySet()) {
-			Field cat = new Field();
-			cat.setName(i.getKey());
-			cat.setValue(i.getValue());
-			categoryList.add(cat);
+			Field field = new Field();
+			field.setName(i.getKey());
+			field.setValue(i.getValue());
+			sortedList.add(field);
 		}
-		Collections.sort(categoryList);
+		Collections.sort(sortedList);
 
 		/* categorize */
-		int size = categoryList.size();
+		int size = sortedList.size();
 		if (size == 0)
 			return "";
-		Field[] category = new Field[size];
+		Field[] field = new Field[size];
 		for (int i = 0; i < size; i++) {
-			category[i] = categoryList.get(size - i - 1);
+			field[i] = sortedList.get(size - i - 1);
 		}
-		String finalCategory = category[0].getName();
+		String unknownData = field[0].getName();
 
-		/* based on category text, the result can change */
-		if (!category[0].getName().toLowerCase().contains(wordList[0])) {
-			if (size > 1 && category[0].getValue() - category[1].getValue() < 1.5F
-					&& category[1].getName().toLowerCase().contains(wordList[0]))
-				finalCategory = category[1].getName();
-			else if (size > 2 && category[0].getValue() - category[2].getValue() < 1.5F
-					&& category[2].getName().toLowerCase().contains(wordList[0]))
-				finalCategory = category[2].getName();
+		/* based on key text, the result can change */
+		if (!field[0].getName().toLowerCase().contains(wordList[0])) {
+			if (size > 1 && field[0].getValue() - field[1].getValue() < 1.5F
+					&& field[1].getName().toLowerCase().contains(wordList[0]))
+				unknownData = field[1].getName();
+			else if (size > 2 && field[0].getValue() - field[2].getValue() < 1.5F
+					&& field[2].getName().toLowerCase().contains(wordList[0]))
+				unknownData = field[2].getName();
 		}
 
-		return finalCategory;
+		return unknownData;
 	}
 
 }

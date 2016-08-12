@@ -10,7 +10,9 @@ import java.util.Map;
 
 import com.marceljm.service.CategoryMachineLearningService;
 import com.marceljm.service.ConstantService;
+import com.marceljm.service.GenericMachineLearningService;
 import com.marceljm.service.impl.CategoryMachineLearningServiceImpl;
+import com.marceljm.service.impl.GenericMachineLearningServiceImpl;
 import com.marceljm.util.ValidateUtil;
 
 public class Export {
@@ -44,7 +46,10 @@ public class Export {
 		String[] field = new String[11];
 
 		CategoryMachineLearningService machineLearningService = new CategoryMachineLearningServiceImpl();
-		Map<String, Map<String, Float>> categoryBase = machineLearningService.categoryKnowledgeBase();
+		Map<String, Map<String, Float>> categoryBase = machineLearningService.knowledgeBase();
+
+		GenericMachineLearningService genericMachineLearningService = new GenericMachineLearningServiceImpl(1, -1, 11);
+		Map<String, Map<String, Float>> brandBase = genericMachineLearningService.knowledgeBase();
 
 		while ((line = in.readLine()) != null) {
 			// split line
@@ -57,6 +62,12 @@ public class Export {
 			// cateorize
 			if (field[7].isEmpty())
 				field[7] = machineLearningService.categorize(categoryBase, field[1]);
+
+			if (field[11].isEmpty()) {
+				field[11] = machineLearningService.categorize(brandBase, field[1]);
+				System.out.println(field[1] + " [" + field[11] + "]");
+				continue;
+			}
 
 			// skip
 			if (field[7].equals("") || !ValidateUtil.isValidCategory(field[7].toLowerCase()))
@@ -100,11 +111,11 @@ public class Export {
 			// stringBuilder.append("\"" + field[4] + "\";");
 			// stringBuilder.append("\"" + field[5] + "\";");
 			// stringBuilder.append("\"" + field[6] + "\";");
-			stringBuilder.append("\"" + field[7] + "\"\n");
+			// stringBuilder.append("\"" + field[7] + "\"\n");
 			// stringBuilder.append("\"" + field[8] + "\";");
 			// stringBuilder.append("\"" + field[9] + "\";");
 			// stringBuilder.append("\"" + field[10] + "\";");
-			// stringBuilder.append("\"" + field[11] + "\"\n");
+			stringBuilder.append("\"" + field[11] + "\"\n");
 		}
 
 		writer.write(stringBuilder.toString());
