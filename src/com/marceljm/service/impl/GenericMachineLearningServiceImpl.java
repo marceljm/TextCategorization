@@ -61,6 +61,10 @@ public class GenericMachineLearningServiceImpl implements GenericMachineLearning
 					key += " " + line.split("\";\"")[KEY_COLUMN2];
 				knownData = line.split("\";\"")[KNOWN_DATA_COLUMN];
 
+				if (line.split("\";\"").length == KNOWN_DATA_COLUMN + 1) {
+					knownData = knownData.substring(0, knownData.length() - 1);
+				}
+
 				if (knownData.equals(""))
 					continue;
 
@@ -157,17 +161,22 @@ public class GenericMachineLearningServiceImpl implements GenericMachineLearning
 		for (int i = 0; i < size; i++) {
 			field[i] = sortedList.get(size - i - 1);
 		}
-		String unknownData = field[0].getName();
+		String unknownData = "";
 
 		/* based on key text, the result can change */
-		if (!field[0].getName().toLowerCase().contains(wordList[0])) {
-			if (size > 1 && field[0].getValue() - field[1].getValue() < 1.5F
-					&& field[1].getName().toLowerCase().contains(wordList[0]))
-				unknownData = field[1].getName();
-			else if (size > 2 && field[0].getValue() - field[2].getValue() < 1.5F
-					&& field[2].getName().toLowerCase().contains(wordList[0]))
-				unknownData = field[2].getName();
-		}
+		System.out.println("------------------------------------------");
+		if (!key.contains(field[0].getName().toLowerCase())) {
+			System.out.println(field[0].getName());
+			for (int i = 1; i < size && i < 4; i++) {
+				if (i < 3)
+					System.out.println(field[i].getName());
+				if (size > i && (key.contains(" " + field[i].getName().toLowerCase() + " "))) {
+					unknownData = field[i].getName();
+					break;
+				}
+			}
+		} else
+			unknownData = field[0].getName();
 
 		return unknownData;
 	}

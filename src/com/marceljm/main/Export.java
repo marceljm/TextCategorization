@@ -52,6 +52,9 @@ public class Export {
 		Map<String, Map<String, Float>> brandBase = genericMachineLearningService.knowledgeBase();
 
 		while ((line = in.readLine()) != null) {
+			if (line.contains(ConstantService.HEADER_SIGNATURE))
+				continue;
+
 			// split line
 			field = line.split("\";\"");
 
@@ -64,13 +67,16 @@ public class Export {
 				field[7] = machineLearningService.categorize(categoryBase, field[1]);
 
 			if (field[11].isEmpty()) {
-				field[11] = machineLearningService.categorize(brandBase, field[1]);
+				field[11] = genericMachineLearningService.categorize(brandBase, field[1] + " " + field[7]);
 				System.out.println(field[1] + " [" + field[11] + "]");
 				continue;
 			}
 
 			// skip
 			if (field[7].equals("") || !ValidateUtil.isValidCategory(field[7].toLowerCase()))
+				continue;
+
+			if (field[11].equals(""))
 				continue;
 
 			// split path

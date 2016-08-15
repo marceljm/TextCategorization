@@ -16,7 +16,7 @@ public class ConstantService {
 			" 9 ", " 10 ", " in ", " ref\\. ", " das ", " dos ", " nas ", " nos ", " ref ", " on ", " and ", " mod\\. ",
 			" um ", " uma ", " n ", " for ", " ao ", " , " };
 
-	public static String[] BAD_CHARS = { "- ", " -", "\\. ", " \\.", ", ", " ," };
+	public static String[] BAD_CHARS = { "- ", " -", "\\. ", " \\.", ", ", " ,"};
 
 	public static String[][] PLURALS = { { "multifuncional" }, { "multifuncionais" } };
 
