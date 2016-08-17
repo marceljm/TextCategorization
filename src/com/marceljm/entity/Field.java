@@ -5,7 +5,7 @@ public class Field implements Comparable<Field> {
 	private Float value;
 
 	private String name;
-	
+
 	public Float getValue() {
 		return value;
 	}
@@ -23,8 +23,8 @@ public class Field implements Comparable<Field> {
 	}
 
 	@Override
-	public int compareTo(Field category) {
-		return value.compareTo(category.getValue());
+	public int compareTo(Field field) {
+		return value.compareTo(field.getValue());
 	}
 
 }

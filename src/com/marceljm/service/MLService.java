@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 
-public interface CategoryMachineLearningService {
+public interface MLService {
 
 	public Map<String, Map<String, Float>> knowledgeBase() throws UnsupportedEncodingException, FileNotFoundException;
 

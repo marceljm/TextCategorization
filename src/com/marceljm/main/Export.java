@@ -8,11 +8,10 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Map;
 
-import com.marceljm.service.CategoryMachineLearningService;
 import com.marceljm.service.ConstantService;
-import com.marceljm.service.GenericMachineLearningService;
-import com.marceljm.service.impl.CategoryMachineLearningServiceImpl;
-import com.marceljm.service.impl.GenericMachineLearningServiceImpl;
+import com.marceljm.service.MLService;
+import com.marceljm.service.impl.BrandMLServiceImpl;
+import com.marceljm.service.impl.CategoryMLServiceImpl;
 import com.marceljm.util.ValidateUtil;
 
 public class Export {
@@ -45,10 +44,10 @@ public class Export {
 		// 11:brand
 		String[] field = new String[11];
 
-		CategoryMachineLearningService machineLearningService = new CategoryMachineLearningServiceImpl();
+		MLService machineLearningService = new CategoryMLServiceImpl();
 		Map<String, Map<String, Float>> categoryBase = machineLearningService.knowledgeBase();
 
-		GenericMachineLearningService genericMachineLearningService = new GenericMachineLearningServiceImpl(1, -1, 11);
+		MLService genericMachineLearningService = new BrandMLServiceImpl(1, -1, 11);
 		Map<String, Map<String, Float>> brandBase = genericMachineLearningService.knowledgeBase();
 
 		while ((line = in.readLine()) != null) {
@@ -127,6 +126,8 @@ public class Export {
 		writer.write(stringBuilder.toString());
 		writer.close();
 		System.out.println("done!");
+
+		in.close();
 	}
 
 }

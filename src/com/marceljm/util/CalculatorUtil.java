@@ -26,7 +26,7 @@ public class CalculatorUtil {
 		return 1F;
 	}
 
-	public static float genericWeight(String knownData, String word) {
+	public static float brandWeight(String knownData, String word) {
 		return knownData.contains(word) ? 1.5F : 1F;
 	}
 
