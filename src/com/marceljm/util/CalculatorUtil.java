@@ -27,7 +27,7 @@ public class CalculatorUtil {
 	}
 
 	public static float brandWeight(String knownData, String word) {
-		return knownData.contains(word) ? 1.5F : 1F;
+		return knownData.contains(word) ? 1F : 0F;
 	}
 
 }

@@ -164,13 +164,9 @@ public class BrandMLServiceImpl implements MLService {
 		String unknownData = "";
 
 		/* based on key text, the result can change */
-		System.out.println("------------------------------------------");
-		if (!key.contains(field[0].getName().toLowerCase())) {
-			System.out.println(field[0].getName());
-			for (int i = 1; i < size && i < 4; i++) {
-				if (i < 3)
-					System.out.println(field[i].getName());
-				if (size > i && (key.contains(" " + field[i].getName().toLowerCase() + " "))) {
+		if (!key.split(";")[0].contains(field[0].getName().toLowerCase())) {
+			for (int i = 1; i < size * 0.1; i++) {
+				if (key.split(";")[0].contains(" " + field[i].getName().toLowerCase() + " ")) {
 					unknownData = field[i].getName();
 					break;
 				}

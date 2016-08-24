@@ -61,15 +61,15 @@ public class Export {
 			field[0] = field[0].split("\"")[1];
 			field[11] = field[11].substring(0, field[11].length() - 1);
 
-			// cateorize
+			// categorize
 			if (field[7].isEmpty())
 				field[7] = machineLearningService.categorize(categoryBase, field[1]);
 
-			if (field[11].isEmpty()) {
-				field[11] = genericMachineLearningService.categorize(brandBase, field[1] + " " + field[7]);
-				System.out.println(field[1] + " [" + field[11] + "]");
-				continue;
-			}
+			if (field[11].isEmpty())
+				field[11] = genericMachineLearningService.categorize(brandBase, field[1] + " ; " + field[7] + " ");
+
+			if (field[11].isEmpty())
+				field[11] = "Outras";
 
 			// skip
 			if (field[7].equals("") || !ValidateUtil.isValidCategory(field[7].toLowerCase()))
@@ -109,17 +109,17 @@ public class Export {
 				field[8 + i] = category[i];
 
 			// write line
-			// stringBuilder.append("\"" + field[0] + "\";");
+			stringBuilder.append("\"" + field[0] + "\";");
 			stringBuilder.append("\"" + field[1] + "\";");
-			// stringBuilder.append("\"" + field[2] + "\";");
-			// stringBuilder.append("\"" + field[3] + "\";");
-			// stringBuilder.append("\"" + field[4] + "\";");
-			// stringBuilder.append("\"" + field[5] + "\";");
-			// stringBuilder.append("\"" + field[6] + "\";");
-			// stringBuilder.append("\"" + field[7] + "\"\n");
-			// stringBuilder.append("\"" + field[8] + "\";");
-			// stringBuilder.append("\"" + field[9] + "\";");
-			// stringBuilder.append("\"" + field[10] + "\";");
+			stringBuilder.append("\"" + field[2] + "\";");
+			stringBuilder.append("\"" + field[3] + "\";");
+			stringBuilder.append("\"" + field[4] + "\";");
+			stringBuilder.append("\"" + field[5] + "\";");
+			stringBuilder.append("\"" + field[6] + "\";");
+			stringBuilder.append("\"" + field[7] + "\";");
+			stringBuilder.append("\"" + field[8] + "\";");
+			stringBuilder.append("\"" + field[9] + "\";");
+			stringBuilder.append("\"" + field[10] + "\";");
 			stringBuilder.append("\"" + field[11] + "\"\n");
 		}
 
