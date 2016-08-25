@@ -44,8 +44,8 @@ public class Export {
 		MLService machineLearningService = new CategoryMLServiceImpl();
 		Map<String, Map<String, Float>> categoryBase = machineLearningService.knowledgeBase();
 
-		MLService genericMachineLearningService = new BrandMLServiceImpl(1, -1, 11);
-		Map<String, Map<String, Float>> brandBase = genericMachineLearningService.knowledgeBase();
+		MLService brandMachineLearningService = new BrandMLServiceImpl(1, 7, 11);
+		Map<String, Map<String, Float>> brandBase = brandMachineLearningService.knowledgeBase();
 
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append(ConstantService.HEADER);
@@ -72,7 +72,7 @@ public class Export {
 					field[7] = machineLearningService.categorize(categoryBase, field[1]);
 
 				if (field[11].isEmpty())
-					field[11] = genericMachineLearningService.categorize(brandBase, field[1] + " ; " + field[7] + " ");
+					field[11] = brandMachineLearningService.categorize(brandBase, field[1] + " ; " + field[7] + " ");
 
 				if (field[11].isEmpty())
 					field[11] = "Outras";
