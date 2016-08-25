@@ -78,9 +78,8 @@ public class CategoryMLServiceImpl implements MLService {
 				}
 
 				/* print progress */
-				if (rowCounter % 100000 == 0)
-					System.out.println(rowCounter);
-				rowCounter++;
+				if (++rowCounter % 100000 == 0)
+					System.out.println("Category ML:" + rowCounter);
 			}
 		} catch (IOException e1) {
 			e1.printStackTrace();

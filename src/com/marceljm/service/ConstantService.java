@@ -8,6 +8,8 @@ public class ConstantService {
 
 	public static String INPUT_FILE = "resources/input.csv";
 
+	public static String OUTPUT_FILE = "resources/output.csv";
+
 	public static String INPUT_TEST_FILE = "resources/uncategorized.csv";
 
 	public static String[] BAD_WORDS = { " - ", " de ", " para ", " com ", " e ", " p\\/ ", " em ", " \\| ", " a ",
@@ -16,7 +18,7 @@ public class ConstantService {
 			" 9 ", " 10 ", " in ", " ref\\. ", " das ", " dos ", " nas ", " nos ", " ref ", " on ", " and ", " mod\\. ",
 			" um ", " uma ", " n ", " for ", " ao ", " , " };
 
-	public static String[] BAD_CHARS = { "- ", " -", "\\. ", " \\.", ", ", " ,"};
+	public static String[] BAD_CHARS = { "- ", " -", "\\. ", " \\.", ", ", " ," };
 
 	public static String[][] PLURALS = { { "multifuncional" }, { "multifuncionais" } };
 

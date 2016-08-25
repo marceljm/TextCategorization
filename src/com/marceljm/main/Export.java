@@ -16,14 +16,16 @@ import com.marceljm.util.ValidateUtil;
 
 public class Export {
 
+	private static String store = "hp";
+
 	public static void main(String[] args) throws IOException {
 		generateOutput();
 	}
 
 	public static void generateOutput() throws IOException {
-		PrintWriter writer = new PrintWriter(new File("resources/output.csv"), "UTF-8");
+		PrintWriter writer = new PrintWriter(new File(ConstantService.OUTPUT_FILE), ConstantService.CHARSET);
 
-		File fileDir = new File(ConstantService.INPUT_FILE);
+		File fileDir = new File("resources/" + store + ".csv");
 		BufferedReader in = new BufferedReader(
 				new InputStreamReader(new FileInputStream(fileDir), ConstantService.CHARSET));
 
@@ -50,6 +52,9 @@ public class Export {
 		MLService genericMachineLearningService = new BrandMLServiceImpl(1, -1, 11);
 		Map<String, Map<String, Float>> brandBase = genericMachineLearningService.knowledgeBase();
 
+		stringBuilder.append(
+				"\"id\";\"name\";\"price\";\"imageSmall\";\"imageMedium\";\"imageLarge\";\"link\";\"path\";\"mainCategory\";\"subCategory\";\"thirdCategory\";\"brand\"\n");
+
 		while ((line = in.readLine()) != null) {
 			if (line.contains(ConstantService.HEADER_SIGNATURE))
 				continue;
@@ -62,7 +67,7 @@ public class Export {
 			field[11] = field[11].substring(0, field[11].length() - 1);
 
 			// categorize
-			if (field[7].isEmpty())
+			if (field[7].isEmpty() || !store.equals("wallmart"))
 				field[7] = machineLearningService.categorize(categoryBase, field[1]);
 
 			if (field[11].isEmpty())
@@ -108,24 +113,15 @@ public class Export {
 			for (int i = 0; i < category.length; i++)
 				field[8 + i] = category[i];
 
-			// write line
-			stringBuilder.append("\"" + field[0] + "\";");
-			stringBuilder.append("\"" + field[1] + "\";");
-			stringBuilder.append("\"" + field[2] + "\";");
-			stringBuilder.append("\"" + field[3] + "\";");
-			stringBuilder.append("\"" + field[4] + "\";");
-			stringBuilder.append("\"" + field[5] + "\";");
-			stringBuilder.append("\"" + field[6] + "\";");
-			stringBuilder.append("\"" + field[7] + "\";");
-			stringBuilder.append("\"" + field[8] + "\";");
-			stringBuilder.append("\"" + field[9] + "\";");
-			stringBuilder.append("\"" + field[10] + "\";");
-			stringBuilder.append("\"" + field[11] + "\"\n");
+			// write lines
+			for (int i = 0; i <= 11; i++)
+				stringBuilder.append("\"" + field[i] + "\";");
+			stringBuilder.append("\n");
 		}
 
 		writer.write(stringBuilder.toString());
 		writer.close();
-		System.out.println("done!");
+		System.out.println("Done!");
 
 		in.close();
 	}

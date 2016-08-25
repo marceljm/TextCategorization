@@ -2,7 +2,7 @@ package com.marceljm.entity;
 
 public class Field implements Comparable<Field> {
 
-	private Float value;
+	private Float value = 0F;
 
 	private String name;
 

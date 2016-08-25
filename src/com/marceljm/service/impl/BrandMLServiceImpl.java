@@ -16,7 +16,6 @@ import java.util.Map;
 import com.marceljm.entity.Field;
 import com.marceljm.service.ConstantService;
 import com.marceljm.service.MLService;
-import com.marceljm.util.CalculatorUtil;
 import com.marceljm.util.TextUtil;
 import com.marceljm.util.ValidateUtil;
 
@@ -43,8 +42,6 @@ public class BrandMLServiceImpl implements MLService {
 		String knownData;
 
 		long rowCounter = 0;
-
-		float weight;
 
 		File fileDir = new File(ConstantService.INPUT_FILE);
 		BufferedReader in = new BufferedReader(
@@ -73,28 +70,23 @@ public class BrandMLServiceImpl implements MLService {
 				if (!ValidateUtil.isValidNameLength(wordList))
 					continue;
 
-				String normalizedKnownData = TextUtil.normalize(knownData);
-
 				/* populate fullMap */
 				for (String word : wordList) {
-					weight = CalculatorUtil.brandWeight(normalizedKnownData, word);
-
 					if (!fullMap.containsKey(word)) {
 						Map<String, Float> aux = new HashMap<String, Float>();
-						aux.put(knownData, weight);
+						aux.put(knownData, 1F);
 						fullMap.put(word, aux);
 					} else {
 						if (fullMap.get(word).get(knownData) == null)
-							fullMap.get(word).put(knownData, weight);
+							fullMap.get(word).put(knownData, 1F);
 						else
-							fullMap.get(word).put(knownData, fullMap.get(word).get(knownData) + weight);
+							fullMap.get(word).put(knownData, fullMap.get(word).get(knownData) + 1F);
 					}
 				}
 
 				/* print progress */
-				if (rowCounter % 100000 == 0)
-					System.out.println(rowCounter);
-				rowCounter++;
+				if (++rowCounter % 100000 == 0)
+					System.out.println("Brand ML:" + rowCounter);
 			}
 		} catch (IOException e1) {
 			e1.printStackTrace();
