@@ -16,22 +16,13 @@ import com.marceljm.util.ValidateUtil;
 
 public class Export {
 
-	private static String store = "hp";
+	private static String[] stores = ConstantService.STORES;
 
 	public static void main(String[] args) throws IOException {
 		generateOutput();
 	}
 
 	public static void generateOutput() throws IOException {
-		PrintWriter writer = new PrintWriter(new File(ConstantService.OUTPUT_FILE), ConstantService.CHARSET);
-
-		File fileDir = new File("resources/" + store + ".csv");
-		BufferedReader in = new BufferedReader(
-				new InputStreamReader(new FileInputStream(fileDir), ConstantService.CHARSET));
-
-		String line;
-		StringBuilder stringBuilder = new StringBuilder();
-
 		// 0:id
 		// 1:name
 		// 2:price
@@ -46,84 +37,94 @@ public class Export {
 		// 11:brand
 		String[] field = new String[11];
 
+		String line;
+
+		PrintWriter writer = new PrintWriter(new File(ConstantService.OUTPUT_FILE), ConstantService.CHARSET);
+
 		MLService machineLearningService = new CategoryMLServiceImpl();
 		Map<String, Map<String, Float>> categoryBase = machineLearningService.knowledgeBase();
 
 		MLService genericMachineLearningService = new BrandMLServiceImpl(1, -1, 11);
 		Map<String, Map<String, Float>> brandBase = genericMachineLearningService.knowledgeBase();
 
-		stringBuilder.append(
-				"\"id\";\"name\";\"price\";\"imageSmall\";\"imageMedium\";\"imageLarge\";\"link\";\"path\";\"mainCategory\";\"subCategory\";\"thirdCategory\";\"brand\"\n");
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append(ConstantService.HEADER);
 
-		while ((line = in.readLine()) != null) {
-			if (line.contains(ConstantService.HEADER_SIGNATURE))
-				continue;
+		for (String store : stores) {
 
-			// split line
-			field = line.split("\";\"");
+			File fileDir = new File("resources/" + store + ".csv");
+			BufferedReader in = new BufferedReader(
+					new InputStreamReader(new FileInputStream(fileDir), ConstantService.CHARSET));
 
-			// remove first and last quotation marks
-			field[0] = field[0].split("\"")[1];
-			field[11] = field[11].substring(0, field[11].length() - 1);
+			while ((line = in.readLine()) != null) {
+				if (line.contains(ConstantService.HEADER_SIGNATURE))
+					continue;
 
-			// categorize
-			if (field[7].isEmpty() || !store.equals("wallmart"))
-				field[7] = machineLearningService.categorize(categoryBase, field[1]);
+				// split line
+				field = line.split("\";\"");
 
-			if (field[11].isEmpty())
-				field[11] = genericMachineLearningService.categorize(brandBase, field[1] + " ; " + field[7] + " ");
+				// remove first and last quotation marks
+				field[0] = field[0].split("\"")[1];
+				field[11] = field[11].substring(0, field[11].length() - 1);
 
-			if (field[11].isEmpty())
-				field[11] = "Outras";
+				// categorize
+				if (field[7].isEmpty() || !store.equals("wallmart"))
+					field[7] = machineLearningService.categorize(categoryBase, field[1]);
 
-			// skip
-			if (field[7].equals("") || !ValidateUtil.isValidCategory(field[7].toLowerCase()))
-				continue;
+				if (field[11].isEmpty())
+					field[11] = genericMachineLearningService.categorize(brandBase, field[1] + " ; " + field[7] + " ");
 
-			if (field[11].equals(""))
-				continue;
+				if (field[11].isEmpty())
+					field[11] = "Outras";
 
-			// split path
-			if (!field[0].equals("id")) {
-				String[] categories = field[7].split(" / ");
-				int lenght = categories.length;
-				if (lenght >= 1) {
-					field[8] = categories[0];
-					if (lenght >= 2) {
-						field[9] = categories[1];
-						if (lenght >= 3) {
-							field[10] = categories[2];
+				// skip
+				if (field[7].equals("") || !ValidateUtil.isValidCategory(field[7].toLowerCase()))
+					continue;
+
+				if (field[11].equals(""))
+					continue;
+
+				// split path
+				if (!field[0].equals("id")) {
+					String[] categories = field[7].split(" / ");
+					int lenght = categories.length;
+					if (lenght >= 1) {
+						field[8] = categories[0];
+						if (lenght >= 2) {
+							field[9] = categories[1];
+							if (lenght >= 3) {
+								field[10] = categories[2];
+							}
 						}
 					}
 				}
+
+				// fill image field
+				if (field[4].isEmpty()) {
+					if (!field[3].isEmpty())
+						field[4] = field[3];
+					else if (!field[5].isEmpty())
+						field[4] = field[5];
+					field[3] = "";
+					field[5] = "";
+				}
+
+				// fill main, sub and third category
+				String[] category = field[7].split(" / ");
+				for (int i = 0; i < category.length; i++)
+					field[8 + i] = category[i];
+
+				// write lines
+				for (int i = 0; i <= 11; i++)
+					stringBuilder.append("\"" + field[i] + "\";");
+				stringBuilder.append("\n");
 			}
-
-			// fill image field
-			if (field[4].isEmpty()) {
-				if (!field[3].isEmpty())
-					field[4] = field[3];
-				else if (!field[5].isEmpty())
-					field[4] = field[5];
-				field[3] = "";
-				field[5] = "";
-			}
-
-			// fill main, sub and third category
-			String[] category = field[7].split(" / ");
-			for (int i = 0; i < category.length; i++)
-				field[8 + i] = category[i];
-
-			// write lines
-			for (int i = 0; i <= 11; i++)
-				stringBuilder.append("\"" + field[i] + "\";");
-			stringBuilder.append("\n");
+			in.close();
+			System.out.println(store + ": done!");
 		}
 
 		writer.write(stringBuilder.toString());
 		writer.close();
-		System.out.println("Done!");
-
-		in.close();
 	}
 
 }
