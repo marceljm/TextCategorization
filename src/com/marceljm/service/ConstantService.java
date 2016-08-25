@@ -29,5 +29,8 @@ public class ConstantService {
 
 	public static final String HEADER = "\"id\";\"name\";\"price\";\"imageSmall\";\"imageMedium\";\"imageLarge\";\"link\";\"path\";\"mainCategory\";\"subCategory\";\"thirdCategory\";\"brand\"\n";
 
-	public static final String[] STORES = { "ricardoeletro", "hp", "megamamute" };
+	public static final String MAIN_STORE = "wallmart";
+
+	public static final String[] STORES = { "ricardoeletro", "hp", "megamamute", MAIN_STORE };
+
 }

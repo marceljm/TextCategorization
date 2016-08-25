@@ -68,7 +68,7 @@ public class Export {
 				field[11] = field[11].substring(0, field[11].length() - 1);
 
 				// categorize
-				if (field[7].isEmpty() || !store.equals("wallmart"))
+				if (field[7].isEmpty() || !store.equals(ConstantService.MAIN_STORE))
 					field[7] = machineLearningService.categorize(categoryBase, field[1]);
 
 				if (field[11].isEmpty())
