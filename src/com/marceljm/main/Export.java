@@ -8,15 +8,15 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Map;
 
-import com.marceljm.service.ConstantService;
 import com.marceljm.service.MLService;
 import com.marceljm.service.impl.BrandMLServiceImpl;
 import com.marceljm.service.impl.CategoryMLServiceImpl;
+import com.marceljm.util.ConstantUtil;
 import com.marceljm.util.ValidateUtil;
 
 public class Export {
 
-	private static String[] stores = ConstantService.STORES;
+	private static String[] stores = ConstantUtil.STORES;
 
 	public static void main(String[] args) throws IOException {
 		generateOutput();
@@ -39,7 +39,7 @@ public class Export {
 
 		String line;
 
-		PrintWriter writer = new PrintWriter(new File(ConstantService.OUTPUT_FILE), ConstantService.CHARSET);
+		PrintWriter writer = new PrintWriter(new File(ConstantUtil.OUTPUT_FILE), ConstantUtil.CHARSET);
 
 		MLService machineLearningService = new CategoryMLServiceImpl();
 		Map<String, Map<String, Float>> categoryBase = machineLearningService.knowledgeBase();
@@ -48,16 +48,18 @@ public class Export {
 		Map<String, Map<String, Float>> brandBase = brandMachineLearningService.knowledgeBase();
 
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append(ConstantService.HEADER);
+		stringBuilder.append(ConstantUtil.HEADER);
+
+		int bufferCounter = 0;
 
 		for (String store : stores) {
 
 			File fileDir = new File("resources/" + store + ".csv");
 			BufferedReader in = new BufferedReader(
-					new InputStreamReader(new FileInputStream(fileDir), ConstantService.CHARSET));
+					new InputStreamReader(new FileInputStream(fileDir), ConstantUtil.CHARSET));
 
 			while ((line = in.readLine()) != null) {
-				if (line.contains(ConstantService.HEADER_SIGNATURE))
+				if (line.contains(ConstantUtil.HEADER_SIGNATURE))
 					continue;
 
 				// split line
@@ -68,7 +70,7 @@ public class Export {
 				field[11] = field[11].substring(0, field[11].length() - 1);
 
 				// categorize
-				if (field[7].isEmpty() || !store.equals(ConstantService.MAIN_STORE))
+				if (field[7].isEmpty() || !store.equals(ConstantUtil.MAIN_STORE))
 					field[7] = machineLearningService.categorize(categoryBase, field[1]);
 
 				if (field[11].isEmpty())
@@ -118,12 +120,21 @@ public class Export {
 				for (int i = 0; i <= 11; i++)
 					stringBuilder.append("\"" + field[i] + "\";");
 				stringBuilder.append("\n");
+
+				bufferCounter++;
+				if (bufferCounter % 200000 == 0) {
+					writer.write(stringBuilder.toString());
+					stringBuilder.setLength(0);
+				}
 			}
+			writer.write(stringBuilder.toString());
+			stringBuilder.setLength(0);
+
 			in.close();
+
 			System.out.println(store + ": done!");
 		}
 
-		writer.write(stringBuilder.toString());
 		writer.close();
 	}
 

@@ -2,18 +2,16 @@ package com.marceljm.util;
 
 import java.text.Normalizer;
 
-import com.marceljm.service.ConstantService;
-
 public class TextUtil {
 
 	private static String removeBadWords(String text) {
-		for (String i : ConstantService.BAD_WORDS)
+		for (String i : ConstantUtil.BAD_WORDS)
 			text = text.replaceAll(i, " ");
 		return text;
 	}
 
 	private static String removeBadChars(String text) {
-		for (String i : ConstantService.BAD_CHARS)
+		for (String i : ConstantUtil.BAD_CHARS)
 			text = text.replaceAll(i, " ");
 		return text;
 	}
@@ -25,8 +23,8 @@ public class TextUtil {
 	}
 
 	private static String addPluralWords(String text) {
-		for (int i = 0; i < ConstantService.PLURALS[0].length; i++)
-			text = text.replaceAll(ConstantService.PLURALS[0][i], ConstantService.PLURALS[1][i]);
+		for (int i = 0; i < ConstantUtil.PLURALS[0].length; i++)
+			text = text.replaceAll(ConstantUtil.PLURALS[0][i], ConstantUtil.PLURALS[1][i]);
 		return text;
 	}
 

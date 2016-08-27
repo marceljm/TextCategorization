@@ -1,6 +1,6 @@
-package com.marceljm.service;
+package com.marceljm.util;
 
-public class ConstantService {
+public class ConstantUtil {
 
 	public static final String HEADER_SIGNATURE = "mainCategory";
 
@@ -31,6 +31,9 @@ public class ConstantService {
 
 	public static final String MAIN_STORE = "wallmart";
 
-	public static final String[] STORES = { "ricardoeletro", "hp", "megamamute", MAIN_STORE };
+	public static final String[] STORES = {
+			"balao", "cintylar", "cissa", "efacil", "eletroshopping", "fastshop", "hp", "insinuante", "kangoolu",
+			"lenovo", "megamamute", "microsoft", "plaza", "ricardoeletro", "salfer",
+			MAIN_STORE };
 
 }

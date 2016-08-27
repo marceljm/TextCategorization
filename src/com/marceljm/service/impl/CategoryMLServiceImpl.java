@@ -14,9 +14,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.marceljm.entity.Field;
-import com.marceljm.service.ConstantService;
 import com.marceljm.service.MLService;
 import com.marceljm.util.CalculatorUtil;
+import com.marceljm.util.ConstantUtil;
 import com.marceljm.util.TextUtil;
 import com.marceljm.util.ValidateUtil;
 
@@ -36,14 +36,14 @@ public class CategoryMLServiceImpl implements MLService {
 
 		float weight;
 
-		File fileDir = new File(ConstantService.INPUT_FILE);
+		File fileDir = new File(ConstantUtil.INPUT_FILE);
 		BufferedReader in = new BufferedReader(
-				new InputStreamReader(new FileInputStream(fileDir), ConstantService.CHARSET));
+				new InputStreamReader(new FileInputStream(fileDir), ConstantUtil.CHARSET));
 
 		/* read file */
 		try {
 			while ((line = in.readLine()) != null) {
-				if (line.contains(ConstantService.HEADER_SIGNATURE))
+				if (line.contains(ConstantUtil.HEADER_SIGNATURE))
 					continue;
 
 				name = line.split("\";\"")[1];
