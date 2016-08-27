@@ -18,7 +18,7 @@ public class ConstantUtil {
 			" 8 ", " 9 ", " 10 ", " in ", " ref\\. ", " das ", " dos ", " nas ", " nos ", " ref ", " on ", " and ",
 			" mod\\. ", " um ", " uma ", " n ", " for ", " ao ", " , " };
 
-	public static final String[] BAD_CHARS = { "- ", " -", "\\. ", " \\.", ", ", " ," };
+	public static final String[] BAD_CHARS = { "- ", " -", "\\. ", " \\.", ", ", " ,", ";" };
 
 	public static final String[][] PLURALS = { { "multifuncional" }, { "multifuncionais" } };
 

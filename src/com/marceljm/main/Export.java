@@ -116,6 +116,12 @@ public class Export {
 				for (int i = 0; i < category.length; i++)
 					field[8 + i] = category[i];
 
+				// replace ";"
+				if (field[1].contains(";"))
+					field[1] = field[1].replaceAll(";", ",");
+				if (field[11].contains(";"))
+					field[11] = field[11].replaceAll(";", " ");
+
 				// write lines
 				for (int i = 0; i <= 11; i++)
 					stringBuilder.append("\"" + field[i] + "\";");
