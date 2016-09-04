@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.HashSet;
 import java.util.Map;
 
 import com.marceljm.service.MLService;
@@ -38,6 +39,8 @@ public class Export {
 		String[] field = new String[11];
 
 		String line;
+
+		HashSet<String> namePriceHashSet = new HashSet<String>();
 
 		PrintWriter writer = new PrintWriter(new File(ConstantUtil.OUTPUT_FILE), ConstantUtil.CHARSET);
 
@@ -121,6 +124,13 @@ public class Export {
 					field[1] = field[1].replaceAll(";", ",");
 				if (field[11].contains(";"))
 					field[11] = field[11].replaceAll(";", " ");
+
+				// skip repeated products
+				String value = field[1] + ";" + field[2];
+				if (namePriceHashSet.contains(value))
+					continue;
+				else
+					namePriceHashSet.add(value);
 
 				// write lines
 				for (int i = 0; i <= 11; i++)

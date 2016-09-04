@@ -146,16 +146,30 @@ public class CategoryMLServiceImpl implements MLService {
 		for (int i = 0; i < size; i++) {
 			category[i] = categoryList.get(size - i - 1);
 		}
-		String finalCategory = category[0].getName();
+		String finalCategory = "Outros / Outros / Outros";
 
-		/* based on category text, the result can change */
-		if (!category[0].getName().toLowerCase().contains(wordList[0])) {
-			if (size > 1 && category[0].getValue() - category[1].getValue() < 1.5F
-					&& category[1].getName().toLowerCase().contains(wordList[0]))
-				finalCategory = category[1].getName();
-			else if (size > 2 && category[0].getValue() - category[2].getValue() < 1.5F
-					&& category[2].getName().toLowerCase().contains(wordList[0]))
-				finalCategory = category[2].getName();
+		/* category should contain the first 3 words of the product name */
+		if (wordList.length > 2) {
+			for (int i = 0; i < category.length * 0.1; i++)
+				if (category[i].getName().toLowerCase().contains(wordList[0])
+						&& category[i].getName().toLowerCase().contains(wordList[1])
+						&& category[i].getName().toLowerCase().contains(wordList[2]))
+					return category[i].getName();
+		}
+
+		/* else category should contain the first 2 word of the product name */
+		if (wordList.length > 1) {
+			for (int i = 0; i < category.length * 0.1; i++)
+				if (category[i].getName().toLowerCase().contains(wordList[0])
+						&& category[i].getName().toLowerCase().contains(wordList[1]))
+					return category[i].getName();
+		}
+
+		/* else category should contain the first word of the product name */
+		if (wordList.length > 0) {
+			for (int i = 0; i < category.length * 0.1; i++)
+				if (category[i].getName().toLowerCase().contains(wordList[0]))
+					return category[i].getName();
 		}
 
 		return finalCategory;
