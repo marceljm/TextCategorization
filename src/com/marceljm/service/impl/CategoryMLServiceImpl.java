@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.marceljm.entity.Field;
 import com.marceljm.service.MLService;
@@ -107,7 +108,7 @@ public class CategoryMLServiceImpl implements MLService {
 	}
 
 	@Override
-	public String categorize(Map<String, Map<String, Float>> fullMap, String name) {
+	public String categorize(Map<String, Map<String, Float>> fullMap, String name, Map<String, Set<String>> brandCategoryMap) {
 		/* category:weight */
 		Map<String, Float> resultMap = new HashMap<String, Float>();
 

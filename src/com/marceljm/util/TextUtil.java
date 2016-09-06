@@ -1,6 +1,8 @@
 package com.marceljm.util;
 
 import java.text.Normalizer;
+import java.util.Arrays;
+import java.util.List;
 
 public class TextUtil {
 
@@ -36,6 +38,16 @@ public class TextUtil {
 		text = removeDoubleSpace(text);
 		text = addPluralWords(text);
 		return text;
+	}
+
+	public static boolean containsAllWords(String text1, String text2) {
+		List<String> text1List = Arrays.asList(text1.split(" "));
+		List<String> text2List = Arrays.asList(text2.split(" "));
+		for (String word : text2List) {
+			if (!text1List.contains(word))
+				return false;
+		}
+		return true;
 	}
 
 }

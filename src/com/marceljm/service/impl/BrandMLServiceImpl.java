@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.marceljm.entity.Field;
 import com.marceljm.service.MLService;
@@ -20,6 +21,8 @@ import com.marceljm.util.TextUtil;
 import com.marceljm.util.ValidateUtil;
 
 public class BrandMLServiceImpl implements MLService {
+
+	private static String[] stores = ConstantUtil.STORES;
 
 	private int KEY_COLUMN1 = -1;
 	private int KEY_COLUMN2 = -1;
@@ -43,78 +46,80 @@ public class BrandMLServiceImpl implements MLService {
 
 		long rowCounter = 0;
 
-		File fileDir = new File(ConstantUtil.INPUT_FILE);
-		BufferedReader in = new BufferedReader(
-				new InputStreamReader(new FileInputStream(fileDir), ConstantUtil.CHARSET));
+		for (String store : stores) {
 
-		/* read file */
-		try {
-			while ((line = in.readLine()) != null) {
-				if (line.contains(ConstantUtil.HEADER_SIGNATURE))
-					continue;
+			File fileDir = new File("resources/" + store.split(";")[0] + ".csv");
+			BufferedReader in = new BufferedReader(
+					new InputStreamReader(new FileInputStream(fileDir), ConstantUtil.CHARSET));
 
-				key = line.split("\";\"")[KEY_COLUMN1];
-				if (KEY_COLUMN2 > 0)
-					key += " " + line.split("\";\"")[KEY_COLUMN2];
-				knownData = line.split("\";\"")[KNOWN_DATA_COLUMN];
+			/* read file */
+			try {
+				while ((line = in.readLine()) != null) {
+					if (line.contains(ConstantUtil.HEADER_SIGNATURE))
+						continue;
 
-				if (line.split("\";\"").length == KNOWN_DATA_COLUMN + 1) {
-					knownData = knownData.substring(0, knownData.length() - 1);
-				}
+					key = line.split("\";\"")[KEY_COLUMN1];
+					// if (KEY_COLUMN2 > 0)
+					// key += " " + line.split("\";\"")[KEY_COLUMN2];
+					knownData = line.split("\";\"")[KNOWN_DATA_COLUMN];
 
-				if (knownData.equals(""))
-					continue;
+					if (line.split("\";\"").length == KNOWN_DATA_COLUMN + 1)
+						knownData = knownData.substring(0, knownData.length() - 1);
 
-				key = TextUtil.normalize(key);
-				String[] wordList = key.split(" ");
-				if (!ValidateUtil.isValidNameLength(wordList))
-					continue;
+					if (knownData.equals(""))
+						continue;
 
-				/* populate fullMap */
-				for (String word : wordList) {
-					if (!fullMap.containsKey(word)) {
-						Map<String, Float> aux = new HashMap<String, Float>();
-						aux.put(knownData, 1F);
-						fullMap.put(word, aux);
-					} else {
-						if (fullMap.get(word).get(knownData) == null)
-							fullMap.get(word).put(knownData, 1F);
-						else
-							fullMap.get(word).put(knownData, fullMap.get(word).get(knownData) + 1F);
+					key = TextUtil.normalize(key);
+					String[] wordList = key.split(" ");
+					if (!ValidateUtil.isValidNameLength(wordList))
+						continue;
+
+					/* populate fullMap */
+					for (String word : wordList) {
+						if (!fullMap.containsKey(word)) {
+							Map<String, Float> aux = new HashMap<String, Float>();
+							aux.put(knownData, 1F);
+							fullMap.put(word, aux);
+						} else {
+							if (fullMap.get(word).get(knownData) == null)
+								fullMap.get(word).put(knownData, 1F);
+							else
+								fullMap.get(word).put(knownData, fullMap.get(word).get(knownData) + 1F);
+						}
 					}
+
+					/* print progress */
+					if (++rowCounter % 100000 == 0)
+						System.out.println("Brand ML:" + rowCounter);
 				}
-
-				/* print progress */
-				if (++rowCounter % 100000 == 0)
-					System.out.println("Brand ML:" + rowCounter);
+			} catch (IOException e1) {
+				e1.printStackTrace();
 			}
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
 
-		/* convert fullMap values to percentage */
-		Float total;
-		for (Map.Entry<String, Map<String, Float>> mainMap : fullMap.entrySet()) {
-			total = 0F;
-			for (Map.Entry<String, Float> subMap : mainMap.getValue().entrySet()) {
-				total += subMap.getValue();
+			/* convert fullMap values to percentage */
+			Float total;
+			for (Map.Entry<String, Map<String, Float>> mainMap : fullMap.entrySet()) {
+				total = 0F;
+				for (Map.Entry<String, Float> subMap : mainMap.getValue().entrySet()) {
+					total += subMap.getValue();
+				}
+				for (Map.Entry<String, Float> subMap : mainMap.getValue().entrySet()) {
+					subMap.setValue(subMap.getValue() / total);
+				}
 			}
-			for (Map.Entry<String, Float> subMap : mainMap.getValue().entrySet()) {
-				subMap.setValue(subMap.getValue() / total);
+
+			try {
+				in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
-
-		try {
-			in.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
 		return fullMap;
 	}
 
 	@Override
-	public String categorize(Map<String, Map<String, Float>> fullMap, String key) {
+	public String categorize(Map<String, Map<String, Float>> fullMap, String key,
+			Map<String, Set<String>> brandCategoryMap) {
 		/* brand:weight */
 		Map<String, Float> resultMap = new HashMap<String, Float>();
 
@@ -145,7 +150,7 @@ public class BrandMLServiceImpl implements MLService {
 		}
 		Collections.sort(sortedList);
 
-		/* categorize */
+		/* invert sorted list */
 		int size = sortedList.size();
 		if (size == 0)
 			return "";
@@ -155,16 +160,14 @@ public class BrandMLServiceImpl implements MLService {
 		}
 		String unknownData = "";
 
-		/* based on key text, the result can change */
-		if (!key.split(";")[0].contains(field[0].getName().toLowerCase())) {
-			for (int i = 1; i < size * 0.1; i++) {
-				if (key.split(";")[0].contains(" " + field[i].getName().toLowerCase() + " ")) {
-					unknownData = field[i].getName();
-					break;
-				}
+		/* categorize */
+		for (int i = 0; i < size * 0.1; i++) {
+			String normalizedField = TextUtil.normalize(field[i].getName());
+			if (TextUtil.containsAllWords(key, normalizedField)) {
+				unknownData = field[i].getName();
+				break;
 			}
-		} else
-			unknownData = field[0].getName();
+		}
 
 		return unknownData;
 	}

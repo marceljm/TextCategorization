@@ -5,10 +5,10 @@ public class CalculatorUtil {
 	public static float categoryWeight(int wordCounter, String knownData, String word, String[] wordList) {
 		switch (wordCounter) {
 		case 0:
-			return knownData.contains(word) ? 1.5F : 1F;
+			return knownData.contains(word) ? 5F : 1F;
 		case 1:
 			if (knownData.contains(word))
-				return knownData.contains(wordList[0]) ? 10F : 1.5F;
+				return knownData.contains(wordList[0]) ? 10F : 5F;
 			break;
 		case 2:
 			if (knownData.contains(word)) {
@@ -17,14 +17,13 @@ public class CalculatorUtil {
 				else if (knownData.contains(wordList[0]) || knownData.contains(wordList[1]))
 					return 10F;
 				else
-					return 1.5F;
+					return 5F;
 			}
 			break;
 		default:
-			return knownData.contains(word) ? 1.5F : 1F;
+			return knownData.contains(word) ? 5F : 1F;
 		}
 		return 1F;
 	}
-
 
 }

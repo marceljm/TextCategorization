@@ -29,11 +29,11 @@ public class ConstantUtil {
 
 	public static final String HEADER = "\"id\";\"name\";\"price\";\"imageSmall\";\"imageMedium\";\"imageLarge\";\"link\";\"path\";\"mainCategory\";\"subCategory\";\"thirdCategory\";\"brand\"\n";
 
-	public static final String MAIN_STORE = "wallmart";
+	public static final String MAIN_STORE = "wallmart;Wallmart";
 
-	public static final String[] STORES = {
-			"balao", "cintylar", "cissa", "efacil", "eletroshopping", "fastshop", "hp", "insinuante", "kangoolu",
-			"lenovo", "megamamute", "microsoft", "plaza", "ricardoeletro", "salfer",
-			MAIN_STORE };
+	public static final String[] STORES = { "balao;Balão da Informática", "cintylar;Cintylar", "cissa;Cissa Magazine",
+			"efacil;Efacil", "eletroshopping;Eletro Shopping", "fastshop;Fastshop", "hp;HP", "insinuante;Insinuante",
+			"kangoolu;Kangoolu", "lenovo;Lenovo", "megamamute;Mega Mamute", "microsoft;Microsoft",
+			"plaza;MerchandisingPlaza", "ricardoeletro;Ricardo Eletro", "salfer;Salfer", MAIN_STORE };
 
 }
