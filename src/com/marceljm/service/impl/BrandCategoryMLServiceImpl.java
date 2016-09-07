@@ -19,8 +19,6 @@ import com.marceljm.util.ValidateUtil;
 
 public class BrandCategoryMLServiceImpl implements BrandCategoryMLService {
 
-	private static String[] stores = ConstantUtil.STORES;
-
 	@Override
 	public Map<String, Set<String>> knowledgeBase() throws UnsupportedEncodingException, FileNotFoundException {
 
@@ -29,55 +27,54 @@ public class BrandCategoryMLServiceImpl implements BrandCategoryMLService {
 
 		String line;
 		String brand;
-		String path;
+		String categoryPath;
 
 		long rowCounter = 0;
 
-		for (String store : stores) {
+		File fileDir = new File(ConstantUtil.INPUT_FILE);
+		BufferedReader in = new BufferedReader(
+				new InputStreamReader(new FileInputStream(fileDir), ConstantUtil.CHARSET));
 
-			File fileDir = new File("resources/" + store.split(";")[0] + ".csv");
-			BufferedReader in = new BufferedReader(
-					new InputStreamReader(new FileInputStream(fileDir), ConstantUtil.CHARSET));
+		/* read file */
+		try {
+			while ((line = in.readLine()) != null) {
+				if (line.contains(ConstantUtil.HEADER_SIGNATURE))
+					continue;
 
-			/* read file */
-			try {
-				while ((line = in.readLine()) != null) {
-					if (line.contains(ConstantUtil.HEADER_SIGNATURE))
-						continue;
+				brand = line.split("\";\"")[11];
+				categoryPath = line.split("\";\"")[7];
 
-					brand = line.split("\";\"")[11];
-					path = line.split("\";\"")[7];
+				if (!ValidateUtil.isValidCategory(categoryPath.toLowerCase()))
+					continue;
 
-					if (!ValidateUtil.isValidCategory(path.toLowerCase()))
-						continue;
+				brand = TextUtil.normalize(brand);
+				brand = brand.substring(0, brand.length() - 1);
+				if (brand.isEmpty())
+					continue;
 
-					brand = TextUtil.normalize(brand);
-					brand = brand.substring(0, brand.length() - 1);
-					if (brand.isEmpty())
-						continue;
-
-					/* populate fullMap */
-					if (fullMap.get(brand) == null) {
-						Set<String> categorySet = new HashSet<String>();
-						categorySet.add(path);
-						fullMap.put(brand, categorySet);
-					} else {
-						fullMap.get(brand).add(path);
-					}
-
-					/* print progress */
-					if (++rowCounter % 100000 == 0)
-						System.out.println("BrandCategory ML:" + rowCounter);
+				/* populate fullMap */
+				if (fullMap.get(brand) == null) {
+					Set<String> categoryPathSet = new HashSet<String>();
+					categoryPathSet.add(categoryPath);
+					fullMap.put(brand, categoryPathSet);
+					System.out.println(brand + ";" + categoryPath);
+				} else {
+					fullMap.get(brand).add(categoryPath);
+					System.out.println(brand + ";" + categoryPath);
 				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 
-			try {
-				in.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+				/* print progress */
+				if (++rowCounter % 100000 == 0)
+					System.out.println("BrandCategory ML:" + rowCounter);
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		try {
+			in.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		return fullMap;
 	}

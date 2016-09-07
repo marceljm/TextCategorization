@@ -8,9 +8,14 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import com.marceljm.service.BrandCategoryMLService;
 import com.marceljm.service.BrandMLService;
+import com.marceljm.service.CategoryMLService;
+import com.marceljm.service.impl.BrandCategoryMLServiceImpl;
 import com.marceljm.service.impl.BrandMLServiceImpl;
+import com.marceljm.service.impl.CategoryMLServiceImpl;
 import com.marceljm.util.ConstantUtil;
 
 public class Export {
@@ -46,14 +51,11 @@ public class Export {
 		BrandMLService brandMachineLearningService = new BrandMLServiceImpl();
 		Map<String, Map<String, Float>> brandBase = brandMachineLearningService.knowledgeBase();
 
-		// MLService machineLearningService = new CategoryMLServiceImpl();
-		// Map<String, Map<String, Float>> categoryBase =
-		// machineLearningService.knowledgeBase();
+		BrandCategoryMLService brandCategoryMLService = new BrandCategoryMLServiceImpl();
+		Map<String, Set<String>> brandCategoryBase = brandCategoryMLService.knowledgeBase();
 
-		// BrandCategoryMLService brandCategoryMLService = new
-		// BrandCategoryMLServiceImpl();
-		// Map<String, Set<String>> brandCategoryBase =
-		// brandCategoryMLService.knowledgeBase();
+		CategoryMLService machineLearningService = new CategoryMLServiceImpl();
+		Map<String, Map<String, Float>> categoryBase = machineLearningService.knowledgeBase();
 
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append(ConstantUtil.HEADER);
@@ -84,14 +86,13 @@ public class Export {
 				namePriceHashSet.add(value);
 
 				// categorize
-				if (field[11].isEmpty()) {
+				if (field[11].isEmpty())
 					field[11] = brandMachineLearningService.categorize(brandBase, field[1]);
-					System.out.println(field[11] + ";" + field[1]);
-				}
 
-				// if (field[7].isEmpty())
-				// field[7] = machineLearningService.categorize(categoryBase,
-				// field[1], brandCategoryBase);
+				if (field[7].isEmpty() && !field[11].isEmpty()) {
+					field[7] = machineLearningService.categorize(categoryBase, field[1], field[11], brandCategoryBase);
+					System.out.println(field[1] + "--->" + field[7]);
+				}
 
 				// if (field[11].isEmpty())
 				// field[11] = "Outras";

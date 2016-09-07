@@ -5,10 +5,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.Set;
 
-public interface MLService {
+public interface CategoryMLService {
 
 	public Map<String, Map<String, Float>> knowledgeBase() throws UnsupportedEncodingException, FileNotFoundException;
 
-	public String categorize(Map<String, Map<String, Float>> fullMap, String name, Map<String, Set<String>> brandCategoryMap);
+	public String categorize(Map<String, Map<String, Float>> fullMap, String name, String brand, Map<String, Set<String>> brandCategoryMap);
 
 }
