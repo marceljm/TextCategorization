@@ -9,7 +9,7 @@ import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Map;
 
-import com.marceljm.service.MLService;
+import com.marceljm.service.BrandMLService;
 import com.marceljm.service.impl.BrandMLServiceImpl;
 import com.marceljm.util.ConstantUtil;
 
@@ -43,22 +43,22 @@ public class Export {
 
 		PrintWriter writer = new PrintWriter(new File(ConstantUtil.OUTPUT_FILE), ConstantUtil.CHARSET);
 
+		BrandMLService brandMachineLearningService = new BrandMLServiceImpl();
+		Map<String, Map<String, Float>> brandBase = brandMachineLearningService.knowledgeBase();
+
 		// MLService machineLearningService = new CategoryMLServiceImpl();
 		// Map<String, Map<String, Float>> categoryBase =
 		// machineLearningService.knowledgeBase();
-
-		MLService brandMachineLearningService = new BrandMLServiceImpl(1, 7, 11);
-		Map<String, Map<String, Float>> brandBase = brandMachineLearningService.knowledgeBase();
 
 		// BrandCategoryMLService brandCategoryMLService = new
 		// BrandCategoryMLServiceImpl();
 		// Map<String, Set<String>> brandCategoryBase =
 		// brandCategoryMLService.knowledgeBase();
-		//
-		// StringBuilder stringBuilder = new StringBuilder();
-		// stringBuilder.append(ConstantUtil.HEADER);
-		//
-		// int bufferCounter = 0;
+
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append(ConstantUtil.HEADER);
+
+		int bufferCounter = 0;
 
 		for (String store : stores) {
 
@@ -76,25 +76,20 @@ public class Export {
 				// remove first and last quotation marks
 				field[0] = field[0].split("\"")[1];
 				field[11] = field[11].substring(0, field[11].length() - 1);
-				
+
 				// skip repeated products
 				String value = field[1] + ";" + field[2];
 				if (namePriceHashSet.contains(value))
 					continue;
-				else
-					namePriceHashSet.add(value);				
+				namePriceHashSet.add(value);
 
 				// categorize
 				if (field[11].isEmpty()) {
-					// field[11] =
-					// brandMachineLearningService.categorize(brandBase,
-					// field[1] + " ; " + field[7] + " ",
-					// brandCategoryBase);
-					field[11] = brandMachineLearningService.categorize(brandBase, field[1], null);
+					field[11] = brandMachineLearningService.categorize(brandBase, field[1]);
+					System.out.println(field[11] + ";" + field[1]);
 				}
 
-				// if (field[7].isEmpty() ||
-				// !store.contains(ConstantUtil.MAIN_STORE))
+				// if (field[7].isEmpty())
 				// field[7] = machineLearningService.categorize(categoryBase,
 				// field[1], brandCategoryBase);
 
