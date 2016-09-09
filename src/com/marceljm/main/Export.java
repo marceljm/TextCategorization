@@ -13,9 +13,11 @@ import java.util.Set;
 import com.marceljm.service.BrandCategoryMLService;
 import com.marceljm.service.BrandMLService;
 import com.marceljm.service.CategoryMLService;
+import com.marceljm.service.NormalizedCategoryService;
 import com.marceljm.service.impl.BrandCategoryMLServiceImpl;
 import com.marceljm.service.impl.BrandMLServiceImpl;
 import com.marceljm.service.impl.CategoryMLServiceImpl;
+import com.marceljm.service.impl.NormalizedCategoryServiceImpl;
 import com.marceljm.util.ConstantUtil;
 
 public class Export {
@@ -47,6 +49,9 @@ public class Export {
 		HashSet<String> namePriceHashSet = new HashSet<String>();
 
 		PrintWriter writer = new PrintWriter(new File(ConstantUtil.OUTPUT_FILE), ConstantUtil.CHARSET);
+
+		NormalizedCategoryService normalizedCategoryService = new NormalizedCategoryServiceImpl();
+		Map<String, String> normalizedCategoryMap = normalizedCategoryService.normalizedCategoryMap();
 
 		BrandMLService brandMachineLearningService = new BrandMLServiceImpl();
 		Map<String, Map<String, Float>> brandBase = brandMachineLearningService.knowledgeBase();
@@ -85,14 +90,25 @@ public class Export {
 					continue;
 				namePriceHashSet.add(value);
 
+				// skip short names
+				if (field[1].split(" ").length < 4)
+					continue;
+
+				String merge;
+				if (store.equals(ConstantUtil.MAIN_STORE))
+					merge = field[1] + " " + field[7] + " " + field[11];
+				else
+					merge = field[1] + " " + field[7] + " " + field[8] + " " + field[9] + " " + field[10] + " "
+							+ field[11];
+
 				// categorize
 				if (field[11].isEmpty())
-					field[11] = brandMachineLearningService.categorize(brandBase, field[1]);
+					field[11] = brandMachineLearningService.categorize(brandBase, merge);
 
-				if (field[7].isEmpty() && !field[11].isEmpty()) {
-					field[7] = machineLearningService.categorize(categoryBase, field[1], field[11], brandCategoryBase);
-					System.out.println(field[1] + "--->" + field[7]);
-				}
+				if ((field[7].isEmpty() || (!field[7].isEmpty() && !store.equals(ConstantUtil.MAIN_STORE)))
+						&& !field[11].isEmpty())
+					field[7] = machineLearningService.categorize(categoryBase, merge, field[11], brandCategoryBase,
+							normalizedCategoryMap);
 
 				// if (field[11].isEmpty())
 				// field[11] = "Outras";

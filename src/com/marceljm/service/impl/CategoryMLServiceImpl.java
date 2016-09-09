@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -24,9 +25,10 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 
 	@Override
 	public Map<String, Map<String, Float>> knowledgeBase() throws UnsupportedEncodingException, FileNotFoundException {
-
 		/* name:[category:weight] */
 		Map<String, Map<String, Float>> fullMap = new HashMap<String, Map<String, Float>>();
+
+		Map<String, Long> categoryAmountMap = categoryAmountMap();
 
 		String line;
 		String name;
@@ -34,7 +36,7 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 
 		long rowCounter = 0;
 
-		float weight;
+		// float weight;
 
 		File fileDir = new File(ConstantUtil.INPUT_FILE);
 		BufferedReader in = new BufferedReader(
@@ -46,7 +48,9 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 				if (line.contains(ConstantUtil.HEADER_SIGNATURE))
 					continue;
 
-				name = line.split("\";\"")[1];
+				name = line.split("\";\"")[1] + " " + line.split("\";\"")[7] + " " + line.split("\";\"")[11];
+				name = name.substring(0, name.length() - 1);
+
 				pathCategory = line.split("\";\"")[7];
 
 				if (!ValidateUtil.isValidCategory(pathCategory.toLowerCase()))
@@ -57,22 +61,25 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 				if (!ValidateUtil.isValidNameLength(nameWordList))
 					continue;
 
-				String normalizedPathCategory = TextUtil.normalize(pathCategory);
+				// String normalizedPathCategory =
+				// TextUtil.normalize(pathCategory);
 
 				/* populate fullMap */
 				// int wordCounter = 0;
 				for (String word : nameWordList) {
-					// weight = CalculatorUtil.categoryWeight(wordCounter,
-					// normalizedPathCategory, word, nameWordList);
+					// float weight = CalculatorUtil.categoryWeight(wordCounter,
+					// normalizedPathCategory, word,
+					// nameWordList);
 					if (!fullMap.containsKey(word)) {
 						Map<String, Float> pathCategoryValueMap = new HashMap<String, Float>();
-						pathCategoryValueMap.put(pathCategory, 1F);
+						pathCategoryValueMap.put(pathCategory, 1F / categoryAmountMap.get(pathCategory));
 						fullMap.put(word, pathCategoryValueMap);
 					} else {
 						if (fullMap.get(word).get(pathCategory) == null)
-							fullMap.get(word).put(pathCategory, 1F);
+							fullMap.get(word).put(pathCategory, 1F / categoryAmountMap.get(pathCategory));
 						else
-							fullMap.get(word).put(pathCategory, fullMap.get(word).get(pathCategory) + 1F);
+							fullMap.get(word).put(pathCategory,
+									fullMap.get(word).get(pathCategory) + 1F / categoryAmountMap.get(pathCategory));
 					}
 					// wordCounter++;
 				}
@@ -106,12 +113,24 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 
 	@Override
 	public String categorize(Map<String, Map<String, Float>> fullMap, String name, String brand,
-			Map<String, Set<String>> brandCategoryMap) {
+			Map<String, Set<String>> brandCategoryMap, Map<String, String> normalizedCategoryMap) {
 		/* category:weight */
 		Map<String, Float> resultMap = new HashMap<String, Float>();
 
 		name = TextUtil.normalize(name);
 		brand = TextUtil.normalize(brand);
+
+		if (name.split(" ").length < 3)
+			return "";
+		String first = name.split(" ")[0];
+		String second = name.split(" ")[1];
+		String third = name.split(" ")[2];
+		if (name.split(" ").length > 3) {
+			if (first.equals(second) || second.equals(third))
+				second = name.split(" ")[3];
+			if (first.equals(third))
+				third = name.split(" ")[3];
+		}
 
 		/* populate resultMap */
 		String[] nameWordList = name.split(" ");
@@ -146,17 +165,156 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 			resultArray[i] = resultSortedList.get(size - i - 1);
 		String category = "";
 
-		/* categorization: category should be binded to brand */
+		/*
+		 * categorization: 10%, first word, second word, brand
+		 */
 		for (int i = 0; i < size * 0.1; i++) {
-			if (brandCategoryMap.get(brand) != null) {
+			String normalizedResult = normalizedCategoryMap.get(resultArray[i].getName());
+			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
+				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && normalizedResult.contains(first)
+						&& normalizedResult.contains(second)) {
+					category = resultArray[i].getName();
+					// System.out.println(resultArray[i].getValue() + ";" + name
+					// + ";" + resultArray[i].getName());
+				}
+			}
+		}
+
+		/* categorization: 10%, first word, third word, brand */
+		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
+			String normalizedResult = normalizedCategoryMap.get(resultArray[i].getName());
+			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
+				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && normalizedResult.contains(first)
+						&& normalizedResult.contains(third)) {
+					category = resultArray[i].getName();
+					// System.out.println(resultArray[i].getValue() + ";" + name
+					// + ";" + resultArray[i].getName());
+				}
+			}
+		}
+
+		/* categorization: 10%, second word, third word, brand */
+		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
+			String normalizedResult = normalizedCategoryMap.get(resultArray[i].getName());
+			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
+				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && normalizedResult.contains(second)
+						&& normalizedResult.contains(third)) {
+					category = resultArray[i].getName();
+					// System.out.println(resultArray[i].getValue() + ";" + name
+					// + ";" + resultArray[i].getName());
+				}
+			}
+		}
+
+		/* categorization: 10%, first word, brand, >=0.4 */
+		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
+			String normalizedResult = normalizedCategoryMap.get(resultArray[i].getName());
+			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
+				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && normalizedResult.contains(first)
+						&& resultArray[i].getValue() >= 0.4) {
+					category = resultArray[i].getName();
+					// System.out.println(resultArray[i].getValue() + ";" + name
+					// + ";" + resultArray[i].getName());
+				}
+			}
+		}
+
+		/* categorization: 10%, second word, brand, >=0.4 */
+		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
+			String normalizedResult = normalizedCategoryMap.get(resultArray[i].getName());
+			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
+				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && resultArray[i].getValue() >= 0.4
+						&& (second.length() <= 3 ? Arrays.asList(normalizedResult.split(" ")).contains(second)
+								: normalizedResult.contains(second)
+										&& second.contains(normalizedResult.substring(0, 4)))) {
+					category = resultArray[i].getName();
+					// System.out.println(resultArray[i].getValue() + ";" + name
+					// + ";" + resultArray[i].getName());
+				}
+			}
+		}
+
+		/* categorization: 10%, third word, brand, >=0.4 */
+		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
+			String normalizedResult = normalizedCategoryMap.get(resultArray[i].getName());
+			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
+				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && resultArray[i].getValue() >= 0.4
+						&& (third.length() <= 3 ? Arrays.asList(normalizedResult.split(" ")).contains(third)
+								: normalizedResult.contains(third)
+										&& third.contains(normalizedResult.substring(0, 4)))) {
+					category = resultArray[i].getName();
+					// System.out.println(resultArray[i].getValue() + ";" + name
+					// + ";" + resultArray[i].getName());
+				}
+			}
+		}
+
+		/*
+		 * categorization: 10%, brand
+		 */
+		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
+			String normalizedResult = normalizedCategoryMap.get(resultArray[i].getName());
+			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
 				if (brandCategoryMap.get(brand).contains(resultArray[i].getName())) {
 					category = resultArray[i].getName();
-					break;
+					System.out.println(resultArray[i].getValue() + ";" + name + ";" + resultArray[i].getName());
 				}
 			}
 		}
 
 		return category;
+
 	}
 
+	private Map<String, Long> categoryAmountMap() throws UnsupportedEncodingException, FileNotFoundException {
+
+		/* category:amount */
+		Map<String, Long> categoryAmountMap = new HashMap<String, Long>();
+
+		String line;
+		String pathCategory;
+
+		long rowCounter = 0;
+
+		File fileDir = new File(ConstantUtil.INPUT_FILE);
+		BufferedReader in = new BufferedReader(
+				new InputStreamReader(new FileInputStream(fileDir), ConstantUtil.CHARSET));
+
+		/* read file */
+		try {
+			while ((line = in.readLine()) != null) {
+				if (line.contains(ConstantUtil.HEADER_SIGNATURE))
+					continue;
+
+				pathCategory = line.split("\";\"")[7];
+
+				if (!ValidateUtil.isValidCategory(pathCategory.toLowerCase()))
+					continue;
+
+				/* populate categoryAmountMap */
+				if (!categoryAmountMap.containsKey(pathCategory)) {
+					categoryAmountMap.put(pathCategory, 1L);
+				} else {
+					if (categoryAmountMap.get(pathCategory) == null)
+						categoryAmountMap.put(pathCategory, 1L);
+					else
+						categoryAmountMap.put(pathCategory, 1L + categoryAmountMap.get(pathCategory));
+				}
+
+				/* print progress */
+				if (++rowCounter % 100000 == 0)
+					System.out.println("Category ML:" + rowCounter);
+			}
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+
+		try {
+			in.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return categoryAmountMap;
+	}
 }

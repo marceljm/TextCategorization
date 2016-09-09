@@ -30,12 +30,17 @@ public class TextUtil {
 		return text;
 	}
 
+	private static String removeInitialAndFinalSpace(String text) {
+		return text.replaceAll("^ ", "").replaceAll(" $", "");
+	}
+
 	public static String normalize(String text) {
 		text = Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "");
 		text = text.toLowerCase();
 		text = removeBadChars(text);
 		text = removeBadWords(text);
 		text = removeDoubleSpace(text);
+		text = removeInitialAndFinalSpace(text);
 		text = addPluralWords(text);
 		return text;
 	}
