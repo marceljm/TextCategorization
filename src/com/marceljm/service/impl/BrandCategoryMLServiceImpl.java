@@ -25,6 +25,8 @@ public class BrandCategoryMLServiceImpl implements BrandCategoryMLService {
 		/* brand:[category] */
 		Map<String, Set<String>> fullMap = new HashMap<String, Set<String>>();
 
+		HashSet<String> namePriceHashSet = new HashSet<String>();
+
 		String line;
 		String brand;
 		String categoryPath;
@@ -40,6 +42,12 @@ public class BrandCategoryMLServiceImpl implements BrandCategoryMLService {
 			while ((line = in.readLine()) != null) {
 				if (line.contains(ConstantUtil.HEADER_SIGNATURE))
 					continue;
+
+				// skip repeated products
+				String value = line.split("\";\"")[1] + ";" + line.split("\";\"")[2];
+				if (namePriceHashSet.contains(value))
+					continue;
+				namePriceHashSet.add(value);
 
 				brand = line.split("\";\"")[11];
 				categoryPath = line.split("\";\"")[7];

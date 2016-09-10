@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,8 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 	public Map<String, Map<String, Float>> knowledgeBase() throws UnsupportedEncodingException, FileNotFoundException {
 		/* name:[category:weight] */
 		Map<String, Map<String, Float>> fullMap = new HashMap<String, Map<String, Float>>();
+
+		HashSet<String> namePriceHashSet = new HashSet<String>();
 
 		Map<String, Long> categoryAmountMap = categoryAmountMap();
 
@@ -47,6 +50,12 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 			while ((line = in.readLine()) != null) {
 				if (line.contains(ConstantUtil.HEADER_SIGNATURE))
 					continue;
+
+				// skip repeated products
+				String value = line.split("\";\"")[1] + ";" + line.split("\";\"")[2];
+				if (namePriceHashSet.contains(value))
+					continue;
+				namePriceHashSet.add(value);
 
 				name = line.split("\";\"")[1] + " " + line.split("\";\"")[7] + " " + line.split("\";\"")[11];
 				name = name.substring(0, name.length() - 1);
@@ -113,7 +122,8 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 
 	@Override
 	public String categorize(Map<String, Map<String, Float>> fullMap, String name, String brand,
-			Map<String, Set<String>> brandCategoryMap, Map<String, String> normalizedCategoryMap) {
+			Map<String, Set<String>> brandCategoryMap, Map<String, String> normalizedFirstCategoryMap,
+			Map<String, String> normalizedSecondCategoryMap, Map<String, String> normalizedThirdCategoryMap) {
 		/* category:weight */
 		Map<String, Float> resultMap = new HashMap<String, Float>();
 
@@ -166,13 +176,14 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 		String category = "";
 
 		/*
-		 * categorization: 10%, first word, second word, brand
+		 * categorization: 10%, Third Category, first word, second word, brand,
+		 * >=0.2
 		 */
 		for (int i = 0; i < size * 0.1; i++) {
-			String normalizedResult = normalizedCategoryMap.get(resultArray[i].getName());
+			String normalizedResult = normalizedThirdCategoryMap.get(resultArray[i].getName());
 			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
 				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && normalizedResult.contains(first)
-						&& normalizedResult.contains(second)) {
+						&& normalizedResult.contains(second) && resultArray[i].getValue() >= 0.2) {
 					category = resultArray[i].getName();
 					// System.out.println(resultArray[i].getValue() + ";" + name
 					// + ";" + resultArray[i].getName());
@@ -180,12 +191,15 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 			}
 		}
 
-		/* categorization: 10%, first word, third word, brand */
+		/*
+		 * categorization: 10%, Third Category, first word, third word, brand,
+		 * >=0.2
+		 */
 		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
-			String normalizedResult = normalizedCategoryMap.get(resultArray[i].getName());
+			String normalizedResult = normalizedThirdCategoryMap.get(resultArray[i].getName());
 			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
 				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && normalizedResult.contains(first)
-						&& normalizedResult.contains(third)) {
+						&& normalizedResult.contains(third) && resultArray[i].getValue() >= 0.2) {
 					category = resultArray[i].getName();
 					// System.out.println(resultArray[i].getValue() + ";" + name
 					// + ";" + resultArray[i].getName());
@@ -193,12 +207,15 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 			}
 		}
 
-		/* categorization: 10%, second word, third word, brand */
+		/*
+		 * categorization: 10%, Third Category, second word, third word, brand,
+		 * >=0.2
+		 */
 		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
-			String normalizedResult = normalizedCategoryMap.get(resultArray[i].getName());
+			String normalizedResult = normalizedThirdCategoryMap.get(resultArray[i].getName());
 			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
 				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && normalizedResult.contains(second)
-						&& normalizedResult.contains(third)) {
+						&& normalizedResult.contains(third) && resultArray[i].getValue() >= 0.2) {
 					category = resultArray[i].getName();
 					// System.out.println(resultArray[i].getValue() + ";" + name
 					// + ";" + resultArray[i].getName());
@@ -206,9 +223,11 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 			}
 		}
 
-		/* categorization: 10%, first word, brand, >=0.4 */
+		/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		/* categorization: 10%, Third Category, first word, brand, >=0.4 */
 		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
-			String normalizedResult = normalizedCategoryMap.get(resultArray[i].getName());
+			String normalizedResult = normalizedThirdCategoryMap.get(resultArray[i].getName());
 			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
 				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && normalizedResult.contains(first)
 						&& resultArray[i].getValue() >= 0.4) {
@@ -219,9 +238,9 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 			}
 		}
 
-		/* categorization: 10%, second word, brand, >=0.4 */
+		/* categorization: 10%, Third Category, second word, brand, >=0.4 */
 		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
-			String normalizedResult = normalizedCategoryMap.get(resultArray[i].getName());
+			String normalizedResult = normalizedThirdCategoryMap.get(resultArray[i].getName());
 			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
 				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && resultArray[i].getValue() >= 0.4
 						&& (second.length() <= 3 ? Arrays.asList(normalizedResult.split(" ")).contains(second)
@@ -234,9 +253,9 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 			}
 		}
 
-		/* categorization: 10%, third word, brand, >=0.4 */
+		/* categorization: 10%, Third Category, third word, brand, >=0.4 */
 		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
-			String normalizedResult = normalizedCategoryMap.get(resultArray[i].getName());
+			String normalizedResult = normalizedThirdCategoryMap.get(resultArray[i].getName());
 			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
 				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && resultArray[i].getValue() >= 0.4
 						&& (third.length() <= 3 ? Arrays.asList(normalizedResult.split(" ")).contains(third)
@@ -249,13 +268,44 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 			}
 		}
 
+		//////////////////////////////////////////////////////////////////////////////////////////////////////
+
 		/*
-		 * categorization: 10%, brand
+		 * categorization: 10%, Second Category, first word, second word, brand
 		 */
 		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
-			String normalizedResult = normalizedCategoryMap.get(resultArray[i].getName());
+			String normalizedResult = normalizedSecondCategoryMap.get(resultArray[i].getName());
 			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
-				if (brandCategoryMap.get(brand).contains(resultArray[i].getName())) {
+				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && resultArray[i].getValue() >= 0.13
+						&& normalizedResult.contains(first) && normalizedResult.contains(second)) {
+					category = resultArray[i].getName();
+					System.out.println(resultArray[i].getValue() + ";" + name + ";" + resultArray[i].getName());
+				}
+			}
+		}
+
+		/*
+		 * categorization: 10%, Second Category, first word, third word, brand
+		 */
+		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
+			String normalizedResult = normalizedSecondCategoryMap.get(resultArray[i].getName());
+			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
+				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && resultArray[i].getValue() >= 0.13
+						&& normalizedResult.contains(first) && normalizedResult.contains(third)) {
+					category = resultArray[i].getName();
+					System.out.println(resultArray[i].getValue() + ";" + name + ";" + resultArray[i].getName());
+				}
+			}
+		}
+
+		/*
+		 * categorization: 10%, Second Category, second word, third word, brand
+		 */
+		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
+			String normalizedResult = normalizedSecondCategoryMap.get(resultArray[i].getName());
+			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
+				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && resultArray[i].getValue() >= 0.13
+						&& normalizedResult.contains(second) && normalizedResult.contains(third)) {
 					category = resultArray[i].getName();
 					System.out.println(resultArray[i].getValue() + ";" + name + ";" + resultArray[i].getName());
 				}
@@ -271,6 +321,8 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 		/* category:amount */
 		Map<String, Long> categoryAmountMap = new HashMap<String, Long>();
 
+		HashSet<String> namePriceHashSet = new HashSet<String>();
+
 		String line;
 		String pathCategory;
 
@@ -285,6 +337,12 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 			while ((line = in.readLine()) != null) {
 				if (line.contains(ConstantUtil.HEADER_SIGNATURE))
 					continue;
+
+				// skip repeated products
+				String value = line.split("\";\"")[1] + ";" + line.split("\";\"")[2];
+				if (namePriceHashSet.contains(value))
+					continue;
+				namePriceHashSet.add(value);
 
 				pathCategory = line.split("\";\"")[7];
 

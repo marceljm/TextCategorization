@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +36,8 @@ public class BrandMLServiceImpl implements BrandMLService {
 		/* name:[brand:weight] */
 		Map<String, Map<String, Float>> fullMap = new HashMap<String, Map<String, Float>>();
 
+		HashSet<String> namePriceHashSet = new HashSet<String>();
+
 		String line;
 		String name;
 		String brand;
@@ -52,6 +55,12 @@ public class BrandMLServiceImpl implements BrandMLService {
 				while ((line = in.readLine()) != null) {
 					if (line.contains(ConstantUtil.HEADER_SIGNATURE))
 						continue;
+
+					// skip repeated products
+					String value = line.split("\";\"")[1] + ";" + line.split("\";\"")[2];
+					if (namePriceHashSet.contains(value))
+						continue;
+					namePriceHashSet.add(value);
 
 					name = line.split("\";\"")[NAME_COLUMN];
 					brand = line.split("\";\"")[BRAND_COLUMN];

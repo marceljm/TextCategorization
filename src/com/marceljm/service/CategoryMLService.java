@@ -9,6 +9,8 @@ public interface CategoryMLService {
 
 	public Map<String, Map<String, Float>> knowledgeBase() throws UnsupportedEncodingException, FileNotFoundException;
 
-	public String categorize(Map<String, Map<String, Float>> fullMap, String name, String brand, Map<String, Set<String>> brandCategoryMap, Map<String, String> normalizedCategoryMap);
+	public String categorize(Map<String, Map<String, Float>> fullMap, String name, String brand,
+			Map<String, Set<String>> brandCategoryMap, Map<String, String> normalizedFirstCategoryMap,
+			Map<String, String> normalizedSecondCategoryMap, Map<String, String> normalizedThirdCategoryMap);
 
 }

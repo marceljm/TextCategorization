@@ -51,7 +51,9 @@ public class Export {
 		PrintWriter writer = new PrintWriter(new File(ConstantUtil.OUTPUT_FILE), ConstantUtil.CHARSET);
 
 		NormalizedCategoryService normalizedCategoryService = new NormalizedCategoryServiceImpl();
-		Map<String, String> normalizedCategoryMap = normalizedCategoryService.normalizedCategoryMap();
+		Map<String, String> normalizedFirstCategoryMap = normalizedCategoryService.normalizedCategoryMap(0);
+		Map<String, String> normalizedSecondCategoryMap = normalizedCategoryService.normalizedCategoryMap(1);
+		Map<String, String> normalizedThirdCategoryMap = normalizedCategoryService.normalizedCategoryMap(2);
 
 		BrandMLService brandMachineLearningService = new BrandMLServiceImpl();
 		Map<String, Map<String, Float>> brandBase = brandMachineLearningService.knowledgeBase();
@@ -108,7 +110,7 @@ public class Export {
 				if ((field[7].isEmpty() || (!field[7].isEmpty() && !store.equals(ConstantUtil.MAIN_STORE)))
 						&& !field[11].isEmpty())
 					field[7] = machineLearningService.categorize(categoryBase, merge, field[11], brandCategoryBase,
-							normalizedCategoryMap);
+							normalizedFirstCategoryMap, normalizedSecondCategoryMap, normalizedThirdCategoryMap);
 
 				// if (field[11].isEmpty())
 				// field[11] = "Outras";

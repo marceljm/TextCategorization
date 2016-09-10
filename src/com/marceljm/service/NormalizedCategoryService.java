@@ -6,6 +6,6 @@ import java.util.Map;
 
 public interface NormalizedCategoryService {
 
-	public Map<String, String> normalizedCategoryMap() throws UnsupportedEncodingException, FileNotFoundException;
+	public Map<String, String> normalizedCategoryMap(int position) throws UnsupportedEncodingException, FileNotFoundException;
 
 }

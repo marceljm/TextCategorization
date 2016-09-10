@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import com.marceljm.service.NormalizedCategoryService;
@@ -18,10 +19,13 @@ import com.marceljm.util.ValidateUtil;
 public class NormalizedCategoryServiceImpl implements NormalizedCategoryService {
 
 	@Override
-	public Map<String, String> normalizedCategoryMap() throws UnsupportedEncodingException, FileNotFoundException {
+	public Map<String, String> normalizedCategoryMap(int position)
+			throws UnsupportedEncodingException, FileNotFoundException {
 
 		/* brand:[category] */
 		Map<String, String> fullMap = new HashMap<String, String>();
+
+		HashSet<String> namePriceHashSet = new HashSet<String>();
 
 		String line;
 		String categoryPath;
@@ -38,24 +42,38 @@ public class NormalizedCategoryServiceImpl implements NormalizedCategoryService 
 				if (line.contains(ConstantUtil.HEADER_SIGNATURE))
 					continue;
 
+				// skip repeated products
+				String value = line.split("\";\"")[1] + ";" + line.split("\";\"")[2];
+				if (namePriceHashSet.contains(value))
+					continue;
+				namePriceHashSet.add(value);
+
 				categoryPath = line.split("\";\"")[7];
 
 				if (!ValidateUtil.isValidCategory(categoryPath.toLowerCase()))
 					continue;
 
 				// split path
-				String key = null;
+				String[] keyArray = new String[3];
 				String[] categories = categoryPath.split(" / ");
 				int lenght = categories.length;
 				if (lenght >= 1) {
-					key = categories[0];
+					keyArray[0] = categories[0];
 					if (lenght >= 2) {
-						key = categories[1];
+						keyArray[1] = categories[1];
 						if (lenght >= 3) {
-							key = categories[2];
+							keyArray[2] = categories[2];
 						}
 					}
 				}
+
+				String key;
+				if (position == 1 && lenght == 3)
+					key = keyArray[position] + " " + keyArray[position + 1];
+				else
+					key = keyArray[position];
+				if (key == null)
+					continue;
 
 				/* populate fullMap */
 				if (fullMap.get(categoryPath) == null) {
@@ -64,7 +82,7 @@ public class NormalizedCategoryServiceImpl implements NormalizedCategoryService 
 
 				/* print progress */
 				if (++rowCounter % 100000 == 0)
-					System.out.println("NormalizedCategory:" + rowCounter);
+					System.out.println(position + "-NormalizedCategory:" + rowCounter);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
