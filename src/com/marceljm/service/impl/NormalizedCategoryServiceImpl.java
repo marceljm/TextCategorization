@@ -43,7 +43,7 @@ public class NormalizedCategoryServiceImpl implements NormalizedCategoryService 
 					continue;
 
 				// skip repeated products
-				String value = line.split("\";\"")[1] + ";" + line.split("\";\"")[2];
+				String value = line.split("\";\"")[1] + ";" + line.split("\";\"")[7];
 				if (namePriceHashSet.contains(value))
 					continue;
 				namePriceHashSet.add(value);
@@ -67,11 +67,33 @@ public class NormalizedCategoryServiceImpl implements NormalizedCategoryService 
 					}
 				}
 
-				String key;
-				if (position == 1 && lenght == 3)
-					key = keyArray[position] + " " + keyArray[position + 1];
-				else
-					key = keyArray[position];
+				String key = null;
+
+				if (position == 2) {
+					if (lenght == 3)
+						key = keyArray[2];
+					else
+						continue;
+				}
+
+				if (position == 1) {
+					if (lenght == 3)
+						key = keyArray[1] + " " + keyArray[2];
+					else if (lenght == 2)
+						key = keyArray[1];
+					else
+						continue;
+				}
+
+				if (position == 0) {
+					if (lenght == 3)
+						key = keyArray[0] + " " + keyArray[1] + " " + keyArray[2];
+					else if (lenght == 2)
+						key = keyArray[0] + " " + keyArray[1];
+					else
+						continue;
+				}
+
 				if (key == null)
 					continue;
 

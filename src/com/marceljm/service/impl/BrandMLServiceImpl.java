@@ -57,7 +57,7 @@ public class BrandMLServiceImpl implements BrandMLService {
 						continue;
 
 					// skip repeated products
-					String value = line.split("\";\"")[1] + ";" + line.split("\";\"")[2];
+					String value = line.split("\";\"")[1] + ";" + line.split("\";\"")[7];
 					if (namePriceHashSet.contains(value))
 						continue;
 					namePriceHashSet.add(value);

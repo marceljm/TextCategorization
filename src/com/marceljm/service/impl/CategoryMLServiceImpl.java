@@ -52,7 +52,7 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 					continue;
 
 				// skip repeated products
-				String value = line.split("\";\"")[1] + ";" + line.split("\";\"")[2];
+				String value = line.split("\";\"")[1] + ";" + line.split("\";\"")[7];
 				if (namePriceHashSet.contains(value))
 					continue;
 				namePriceHashSet.add(value);
@@ -135,12 +135,6 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 		String first = name.split(" ")[0];
 		String second = name.split(" ")[1];
 		String third = name.split(" ")[2];
-		if (name.split(" ").length > 3) {
-			if (first.equals(second) || second.equals(third))
-				second = name.split(" ")[3];
-			if (first.equals(third))
-				third = name.split(" ")[3];
-		}
 
 		/* populate resultMap */
 		String[] nameWordList = name.split(" ");
@@ -164,156 +158,188 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 			field.setValue(i.getValue());
 			resultSortedList.add(field);
 		}
-		Collections.sort(resultSortedList);
+		Collections.sort(resultSortedList, Collections.reverseOrder());
 
-		/* invert sorted list and convert to array */
 		int size = resultSortedList.size();
 		if (size == 0)
 			return "";
+
+		/* convert to array */
 		Field[] resultArray = new Field[size];
-		for (int i = 0; i < size; i++)
-			resultArray[i] = resultSortedList.get(size - i - 1);
+		resultArray = resultSortedList.toArray(resultArray);
+
 		String category = "";
 
-		/*
-		 * categorization: 10%, Third Category, first word, second word, brand,
-		 * >=0.2
-		 */
-		for (int i = 0; i < size * 0.1; i++) {
+		/* 10233: [third] category, first and second word, brand, 0.0 */
+		for (int i = 0; i < size && category.equals(""); i++) {
 			String normalizedResult = normalizedThirdCategoryMap.get(resultArray[i].getName());
 			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
-				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && normalizedResult.contains(first)
-						&& normalizedResult.contains(second) && resultArray[i].getValue() >= 0.2) {
+				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && contains(first, normalizedResult)
+						&& contains(second, normalizedResult) && resultArray[i].getValue() >= 0.0) {
 					category = resultArray[i].getName();
 					// System.out.println(resultArray[i].getValue() + ";" + name
 					// + ";" + resultArray[i].getName());
+					break;
 				}
 			}
 		}
-
-		/*
-		 * categorization: 10%, Third Category, first word, third word, brand,
-		 * >=0.2
-		 */
-		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
-			String normalizedResult = normalizedThirdCategoryMap.get(resultArray[i].getName());
-			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
-				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && normalizedResult.contains(first)
-						&& normalizedResult.contains(third) && resultArray[i].getValue() >= 0.2) {
-					category = resultArray[i].getName();
-					// System.out.println(resultArray[i].getValue() + ";" + name
-					// + ";" + resultArray[i].getName());
-				}
-			}
-		}
-
-		/*
-		 * categorization: 10%, Third Category, second word, third word, brand,
-		 * >=0.2
-		 */
-		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
-			String normalizedResult = normalizedThirdCategoryMap.get(resultArray[i].getName());
-			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
-				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && normalizedResult.contains(second)
-						&& normalizedResult.contains(third) && resultArray[i].getValue() >= 0.2) {
-					category = resultArray[i].getName();
-					// System.out.println(resultArray[i].getValue() + ";" + name
-					// + ";" + resultArray[i].getName());
-				}
-			}
-		}
-
-		/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		/* categorization: 10%, Third Category, first word, brand, >=0.4 */
-		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
-			String normalizedResult = normalizedThirdCategoryMap.get(resultArray[i].getName());
-			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
-				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && normalizedResult.contains(first)
-						&& resultArray[i].getValue() >= 0.4) {
-					category = resultArray[i].getName();
-					// System.out.println(resultArray[i].getValue() + ";" + name
-					// + ";" + resultArray[i].getName());
-				}
-			}
-		}
-
-		/* categorization: 10%, Third Category, second word, brand, >=0.4 */
-		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
-			String normalizedResult = normalizedThirdCategoryMap.get(resultArray[i].getName());
-			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
-				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && resultArray[i].getValue() >= 0.4
-						&& (second.length() <= 3 ? Arrays.asList(normalizedResult.split(" ")).contains(second)
-								: normalizedResult.contains(second)
-										&& second.contains(normalizedResult.substring(0, 4)))) {
-					category = resultArray[i].getName();
-					// System.out.println(resultArray[i].getValue() + ";" + name
-					// + ";" + resultArray[i].getName());
-				}
-			}
-		}
-
-		/* categorization: 10%, Third Category, third word, brand, >=0.4 */
-		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
-			String normalizedResult = normalizedThirdCategoryMap.get(resultArray[i].getName());
-			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
-				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && resultArray[i].getValue() >= 0.4
-						&& (third.length() <= 3 ? Arrays.asList(normalizedResult.split(" ")).contains(third)
-								: normalizedResult.contains(third)
-										&& third.contains(normalizedResult.substring(0, 4)))) {
-					category = resultArray[i].getName();
-					// System.out.println(resultArray[i].getValue() + ";" + name
-					// + ";" + resultArray[i].getName());
-				}
-			}
-		}
-
-		//////////////////////////////////////////////////////////////////////////////////////////////////////
-
-		/*
-		 * categorization: 10%, Second Category, first word, second word, brand
-		 */
-		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
+		/* 2130: [second] category, first and second word, brand, 0.1 */
+		for (int i = 0; i < size && category.equals(""); i++) {
 			String normalizedResult = normalizedSecondCategoryMap.get(resultArray[i].getName());
 			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
-				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && resultArray[i].getValue() >= 0.13
-						&& normalizedResult.contains(first) && normalizedResult.contains(second)) {
+				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && contains(first, normalizedResult)
+						&& contains(second, normalizedResult) && resultArray[i].getValue() >= 0.1) {
 					category = resultArray[i].getName();
-					System.out.println(resultArray[i].getValue() + ";" + name + ";" + resultArray[i].getName());
+					// System.out.println(resultArray[i].getValue() + ";" + name
+					// + ";" + resultArray[i].getName());
+					break;
 				}
 			}
 		}
-
-		/*
-		 * categorization: 10%, Second Category, first word, third word, brand
-		 */
-		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
-			String normalizedResult = normalizedSecondCategoryMap.get(resultArray[i].getName());
+		/* 411: [first] category, first and second word, brand, 0.02 */
+		for (int i = 0; i < size && category.equals(""); i++) {
+			String normalizedResult = normalizedFirstCategoryMap.get(resultArray[i].getName());
 			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
-				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && resultArray[i].getValue() >= 0.13
-						&& normalizedResult.contains(first) && normalizedResult.contains(third)) {
+				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && contains(first, normalizedResult)
+						&& contains(second, normalizedResult) && resultArray[i].getValue() >= 0.02) {
 					category = resultArray[i].getName();
-					System.out.println(resultArray[i].getValue() + ";" + name + ";" + resultArray[i].getName());
+					// System.out.println(resultArray[i].getValue() + ";" + name
+					// + ";" + resultArray[i].getName());
+					break;
 				}
 			}
 		}
-
-		/*
-		 * categorization: 10%, Second Category, second word, third word, brand
-		 */
-		for (int i = 0; i < size * 0.1 && category.equals(""); i++) {
+		/* 3006: [third] category, first and second word, 0.02 */
+		for (int i = 0; i < size && category.equals(""); i++) {
+			String normalizedResult = normalizedThirdCategoryMap.get(resultArray[i].getName());
+			if (normalizedResult != null) {
+				if (contains(first, normalizedResult) && contains(second, normalizedResult)
+						&& resultArray[i].getValue() >= 0.02) {
+					category = resultArray[i].getName();
+					// System.out.println(resultArray[i].getValue() + ";" + name
+					// + ";" + resultArray[i].getName());
+					break;
+				}
+			}
+		}
+		/* 704: [second] category, first and second word, 0.07 */
+		for (int i = 0; i < size && category.equals(""); i++) {
+			String normalizedResult = normalizedSecondCategoryMap.get(resultArray[i].getName());
+			if (normalizedResult != null) {
+				if (contains(first, normalizedResult) && contains(second, normalizedResult)
+						&& resultArray[i].getValue() >= 0.07) {
+					category = resultArray[i].getName();
+					// System.out.println(resultArray[i].getValue() + ";" + name
+					// + ";" + resultArray[i].getName());
+					break;
+				}
+			}
+		}
+		/* 35: [first] category, first and second word, 0.28 */
+		for (int i = 0; i < size && category.equals(""); i++) {
+			String normalizedResult = normalizedFirstCategoryMap.get(resultArray[i].getName());
+			if (normalizedResult != null) {
+				if (contains(first, normalizedResult) && contains(second, normalizedResult)
+						&& resultArray[i].getValue() >= 0.28) {
+					category = resultArray[i].getName();
+					// System.out.println(resultArray[i].getValue() + ";" + name
+					// + ";" + resultArray[i].getName());
+					break;
+				}
+			}
+		}
+		/* 827: [third] category, first and third word, brand, 0.03 */
+		for (int i = 0; i < size && category.equals(""); i++) {
+			String normalizedResult = normalizedThirdCategoryMap.get(resultArray[i].getName());
+			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
+				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && contains(first, normalizedResult)
+						&& contains(third, normalizedResult) && resultArray[i].getValue() >= 0.03) {
+					category = resultArray[i].getName();
+					// System.out.println(resultArray[i].getValue() + ";" + name
+					// + ";" + resultArray[i].getName());
+					break;
+				}
+			}
+		}
+		/* 702: [second] category, first and third word, brand, 0.1 */
+		for (int i = 0; i < size && category.equals(""); i++) {
 			String normalizedResult = normalizedSecondCategoryMap.get(resultArray[i].getName());
 			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
-				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && resultArray[i].getValue() >= 0.13
-						&& normalizedResult.contains(second) && normalizedResult.contains(third)) {
+				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && contains(first, normalizedResult)
+						&& contains(third, normalizedResult) && resultArray[i].getValue() >= 0.1) {
+					category = resultArray[i].getName();
+					// System.out.println(resultArray[i].getValue() + ";" + name
+					// + ";" + resultArray[i].getName());
+					break;
+				}
+			}
+		}
+		/* 158: [third] category, first and third word, 0.22 */
+		for (int i = 0; i < size && category.equals(""); i++) {
+			String normalizedResult = normalizedThirdCategoryMap.get(resultArray[i].getName());
+			if (normalizedResult != null) {
+				if (contains(first, normalizedResult) && contains(third, normalizedResult)
+						&& resultArray[i].getValue() >= 0.22) {
+					category = resultArray[i].getName();
+					// System.out.println(resultArray[i].getValue() + ";" + name
+					// + ";" + resultArray[i].getName());
+					break;
+				}
+			}
+		}
+		/* 148: [second] category, first and third word, 0.22 */
+		for (int i = 0; i < size && category.equals(""); i++) {
+			String normalizedResult = normalizedSecondCategoryMap.get(resultArray[i].getName());
+			if (normalizedResult != null) {
+				if (contains(first, normalizedResult) && contains(third, normalizedResult)
+						&& resultArray[i].getValue() >= 0.22) {
+					category = resultArray[i].getName();
+					// System.out.println(resultArray[i].getValue() + ";" + name
+					// + ";" + resultArray[i].getName());
+					break;
+				}
+			}
+		}
+		/* 39320: [third] category, first word, brand, 0.136 */
+		for (int i = 0; i < size && category.equals(""); i++) {
+			String normalizedResult = normalizedThirdCategoryMap.get(resultArray[i].getName());
+			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
+				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && contains(first, normalizedResult)
+						&& resultArray[i].getValue() >= 0.0) {
+					category = resultArray[i].getName();
+					// System.out.println(resultArray[i].getValue() + ";" + name
+					// + ";" + resultArray[i].getName());
+					break;
+				}
+			}
+		}
+		/* ?: [second] category, first word, brand, 0.24 */
+		for (int i = 0; i < size && category.equals(""); i++) {
+			String normalizedResult = normalizedSecondCategoryMap.get(resultArray[i].getName());
+			if (normalizedResult != null && brandCategoryMap.get(brand) != null) {
+				if (brandCategoryMap.get(brand).contains(resultArray[i].getName()) && contains(first, normalizedResult)
+						&& resultArray[i].getValue() >= 0.24) {
 					category = resultArray[i].getName();
 					System.out.println(resultArray[i].getValue() + ";" + name + ";" + resultArray[i].getName());
+					break;
 				}
 			}
 		}
 
 		return category;
 
+	}
+
+	private boolean contains(String word, String result) {
+		return word.length() <= 3 ? Arrays.asList(result.split(" ")).contains(word)
+				: result.contains(word) && containsResult(word, result);
+	}
+
+	private boolean containsResult(String word, String result) {
+		for (String aux : result.split(" "))
+			if (aux.contains(word) && word.contains(aux.substring(0, 4)))
+				return true;
+		return false;
 	}
 
 	private Map<String, Long> categoryAmountMap() throws UnsupportedEncodingException, FileNotFoundException {
@@ -339,7 +365,7 @@ public class CategoryMLServiceImpl implements CategoryMLService {
 					continue;
 
 				// skip repeated products
-				String value = line.split("\";\"")[1] + ";" + line.split("\";\"")[2];
+				String value = line.split("\";\"")[1] + ";" + line.split("\";\"")[7];
 				if (namePriceHashSet.contains(value))
 					continue;
 				namePriceHashSet.add(value);

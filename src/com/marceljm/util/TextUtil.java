@@ -1,6 +1,7 @@
 package com.marceljm.util;
 
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,9 +41,22 @@ public class TextUtil {
 		text = removeBadChars(text);
 		text = removeBadWords(text);
 		text = removeDoubleSpace(text);
+		text = removeRepeatedWords(text);
 		text = removeInitialAndFinalSpace(text);
 		text = addPluralWords(text);
 		return text;
+	}
+
+	private static String removeRepeatedWords(String text) {
+		List<String> list = new ArrayList<String>();
+		String result = "";
+		for (String word : text.split(" ")) {
+			if (!list.contains(word)) {
+				list.add(word);
+				result += word + " ";
+			}
+		}
+		return result;
 	}
 
 	public static boolean containsAllWords(String text1, String text2) {

@@ -108,9 +108,10 @@ public class Export {
 					field[11] = brandMachineLearningService.categorize(brandBase, merge);
 
 				if ((field[7].isEmpty() || (!field[7].isEmpty() && !store.equals(ConstantUtil.MAIN_STORE)))
-						&& !field[11].isEmpty())
+						&& !field[11].isEmpty()) {
 					field[7] = machineLearningService.categorize(categoryBase, merge, field[11], brandCategoryBase,
 							normalizedFirstCategoryMap, normalizedSecondCategoryMap, normalizedThirdCategoryMap);
+				}
 
 				// if (field[11].isEmpty())
 				// field[11] = "Outras";
